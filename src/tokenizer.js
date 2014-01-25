@@ -1,274 +1,602 @@
-// ;(function (root, Structure, undefined){
-//   'use strict';
+// define([
+//   './core',
+//   './util'
+// ], function(Structure) {
 
-//   // Tokenizer states
-//   var DATA     = 'data'
-//     , TAG_OPEN = 'tag open'
-//     , TAG_NAME = 'tag name'
-//     , END_TAG_NAME = 'end tag name'
-//     , BEFORE_ATTR_KEY = 'before attr key'
-//     , ATTR_KEY = 'attr key'
-//     , BEFORE_ATTR_VALUE = 'before attr value'
-//     , ATTR_VALUE = 'attr value'
-//     , AFTER_ATTR = 'after attr'
-//     ;
+(function(core, util) {
 
-//   var Token = {
-//     TEXT: 'text',
-//     START_TAG: 'start tag',
-//     END_TAG: 'end tag',
-//     ATTR_KEY: 'attr key',
-//     // ATTR_VALUE: 'attr value', -> Using TEXT for attribute values
-//     END_ATTR: 'end attr',
-//     START_TAG_CLOSE: 'start tag close',
-//     EOF: 'eof',
-//   };
+  var Token = {
+    TEXT            : 'text',
+    START_TAG       : 'start tag',
+    START_TAG_CLOSE : 'start tag close',
+    ATTR_KEY        : 'attr key',
+    ATTR_VALUE      : 'attr value',
+    END_ATTR        : 'end attr',
+    END_TAG         : 'end tag',
+    EOF             : 'eof',
+    COMMENT         : 'comment'
+  };
 
-//   var Tokenizer = function (parser) {
-//     this.initialize.call(this, parser);
-//     return this;
-//   };
+  var Tokenizer = function (parser) {
+    this.initialize(parser);
+    return this;
+  };
 
-//   Tokenizer.prototype.initialize = function (parser) {
-//     this.parser = parser;
-//     this.state = DATA;
-//     this.token = null;
-//     this.attrDelimiter = null;
-//   };
+  // Tokenizer states
+  Tokenizer.DATA              = 'data';
+  Tokenizer.TAG_OPEN          = 'tag open';
+  Tokenizer.TAG_NAME          = 'tag name';
 
-//   Tokenizer.prototype.process = function (chr) {
-//     // console.log(this.state, chr);
-//     switch (this.state) {
+  Tokenizer.END_TAG_OPEN_NAME = 'end tag open name';
+  Tokenizer.END_TAG_NAME      = 'end tag name';
+  
+  Tokenizer.BEFORE_ATTR_KEY   = 'before attr key';
+  Tokenizer.ATTR_KEY          = 'attr key';
+  Tokenizer.BEFORE_ATTR_VALUE = 'before attr value';
+  Tokenizer.ATTR_VALUE        = 'attr value';
+  Tokenizer.AFTER_ATTR        = 'after attr';
 
-// ////////// DATA 
-//       case DATA:
-//         switch (true) {
-//           // case alpha(chr):
-            
-//           //   break;
+  Tokenizer.PLAINTEXT         = 'plaintext';
+  Tokenizer.PLAINTEXT_LESS_THAN_SIGN = 'plaintext less than sign';
+  Tokenizer.PLAINTEXT_END_TAG_OPEN = 'plaintext end tag open';
+  Tokenizer.PLAINTEXT_END_TAG_NAME = 'plaintext end tag name';
 
-//           case '<' === chr:
-//             this.state = TAG_OPEN;
-//             break;
+  Tokenizer.MARKUP_DECLARATION = 'markup declaration';
+  Tokenizer.COMMENT_START = 'comment start';
+  Tokenizer.COMMENT = 'comment';
+  Tokenizer.COMMENT_END_DASH = 'comment end dash';
+  Tokenizer.COMMENT_END = 'comment end';
 
-//           case -1 === chr:
-//             this.emit({
-//               type: Token.EOF
-//             });
-//             break;
+  Tokenizer.prototype.initialize = function (parser) {
+    this.parser = parser;
+    this.state = Tokenizer.DATA;
+    this.token = null;
+    this.attrDelimiter = null;
+    this.buffer = '';
 
-//           default:
-//             this.emit({
-//               type: Token.TEXT,
-//               data: chr
-//             });
-//             // this.parser.error('Unexpected character in data: '+chr);
-//             break;
-//         }
-//         break;
+    this.tagStartPointer = null
+    // this.tagEndPointer = null;
+  };
 
-// ////////// TAG_OPEN 
-//       case TAG_OPEN:
-//         switch (true) {
+  Tokenizer.prototype.process = function (chr) {
 
-//           case alpha(chr):
-//             this.token = {
-//               type: Token.START_TAG,
-//               name: chr,
-//             };
-//             this.state = TAG_NAME;
-//             break;
+    if (!this.state) {
+      throw new Error('No tokenizer state');
+    }
 
-//           case '/' === chr:
-//             this.token = {
-//               type: Token.END_TAG,
-//               name: '',
-//             };
-//             this.state = END_TAG_NAME;
-//             break;
+    switch (this.state) {
 
-//           case -1 === chr:
-//             this.parser.error('Unexpected EOF in tag open');
-//             break;
+      case Tokenizer.DATA:
+        switch (true) {
 
-//           default:
-//             this.parser.error('Unexpected character in tag open: '+chr);
-//             break;
-//         }
-//         break;
+          case '<' === chr:
+            this.state = Tokenizer.TAG_OPEN;
+            this.tagStartPointer = this.parser.stream.pointer - 1;
+            break;
 
-// ////////// TAG_NAME
-//       case TAG_NAME:
-//         switch (true) {
-//           case alpha(chr):
-//             this.token.name += chr;
-//             break;
+          case -1 === chr:
+            this.emit({
+              type: Token.EOF
+            });
+            break;
 
-//           case whitespace(chr):
-//             this.emit();
-//             this.state = BEFORE_ATTR_KEY;
-//             break;
+          default:
+            this.emit({
+              type: Token.TEXT,
+              data: chr
+            });
+            // this.parser.error('Unexpected character in data: '+chr);
+            break;
+        }
+        break;
 
-//           case '>' === chr:
-//             this.emit();
-//             this.state = BEFORE_ATTR_KEY;
-//             this.process(chr);
-//             break;
+      case Tokenizer.TAG_OPEN:
+        switch (true) {
 
-//           case -1 === chr:
-//             // this.parser.error('Unexpected EOF in tag name');
-//             this.emit();
-//             this.state = DATA;
-//             this.process(chr);
-//             break;
+          case '!' === chr:
+            this.state = Tokenizer.MARKUP_DECLARATION;
+            break;
 
-//           default:
-//             this.parser.error('Unexpected character in tag name: '+chr);
-//             break;
-//         }
-//         break;
+          case '/' === chr:
+            this.state = Tokenizer.END_TAG_OPEN_NAME;
+            break;
 
-// ////////// END_TAG_NAME
-//       case END_TAG_NAME:
-//         switch (true) {
+          case util.alpha(chr):
+            this.state = Tokenizer.TAG_NAME;
+            this.token = {
+              type: Token.START_TAG,
+              name: chr,
+              start: this.tagStartPointer
+            };
+            break;
 
-//           case alpha(chr):
-//             this.token.name += chr;
-//             break;
+          case '?' === chr:
+            this.parser.error('Unexpected ? in tag open');
+            this.state = Tokenizer.BOGUS_COMMENT;
+            break;
 
-//           case '>' === chr:
-//             this.emit();
-//             this.state = DATA;
-//             break;
+          default:
+            this.parser.notice('Unexpected character in tag open: '+chr);
+            this.state = Tokenizer.DATA;
+            this.emit({ type: Token.TEXT, data: '<' });
+            this.process(chr);
+            // alert(1);
+            break;
+        }
+        break;
 
-//           default:
-//             this.parser.error('Unexpected character in end tag name: '+chr);
-//             break;
-//         }
-//         break;
+      case Tokenizer.TAG_NAME:
+        switch (true) {
 
-// ////////// BEFORE_ATTR_KEY
-//       case BEFORE_ATTR_KEY:
-//         switch (true) {
+          case util.whitespace(chr):
+            this.state = Tokenizer.BEFORE_ATTR_KEY;
+            this.emit();
+            break;
 
-//           case whitespace(chr):
-//             break; // Ignore
+          case '/' === chr:
+            this.state = Tokenizer.SELF_CLOSING_START_TAG;
+            break;
 
-//           case alpha(chr):
-//             this.token = {
-//               type: Token.ATTR_KEY,
-//               name: chr,
-//             };
-//             this.state = ATTR_KEY;
-//             break;
+          case '>' === chr:
+            this.state = Tokenizer.BEFORE_ATTR_KEY;
+            this.emit();
+            this.process(chr);
+            break;
 
-//           case '>' === chr:
-//             this.emit({
-//               type: Token.START_TAG_CLOSE
-//             });
-//             this.state = DATA;
-//             break;
+          // TODO
+          // case '\0':
+          //   break;
 
-//           default:
-//             this.parser.error('Unexpected character before attribute key: '+chr);
-//             break;
-//         }
-//         break;
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in end tag name');
+            this.state = Tokenizer.DATA;
+            this.process(chr);
+            break;
 
-// ////////// ATTR_KEY
-//       case ATTR_KEY:
-//         switch (true) {
-//           case alpha(chr):
-//             this.token.name += chr;
-//             break;
+          default:
+            this.token.name += chr;
+            break;
+        }
+        break;
 
-//           case '=' === chr:
-//             this.emit();
-//             this.state = BEFORE_ATTR_VALUE;
-//             break;
+      case Tokenizer.END_TAG_OPEN_NAME:
+        switch (true) {
 
-//           default:
-//             this.parser.error('Unexpected character in attribute key: '+chr);
-//             break;
-//         }
-//         break;
+          case util.alpha(chr):
+            this.token = {
+              type: Token.END_TAG,
+              name: chr
+            };
+            this.state = Tokenizer.END_TAG_NAME;
+            break;
 
-// ////////// BEFORE_ATTR_VALUE
-//       case BEFORE_ATTR_VALUE:
-//         switch (true) {
+          case '>' === chr:
+            this.parser.notice('Unexpected > in end tag open name');
+            this.state = Tokenizer.DATA;
+            break;
 
-//           case whitespace(chr):
-//             break; // Ignore
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in tag open name');
+            this.emit({ type: Token.TEXT, data: '</' });
+            this.process(chr);
+            break;
 
-//           case '"' === chr:
-//           case "'" === chr:
-//             this.attrDelimiter = chr;
-//             this.state = ATTR_VALUE;
-//             this.token = {
-//               type: Token.TEXT,
-//               data: '',
-//             };
-//             break;
+          default:
+            this.parser.notice('Unexpected character in end tag open name: '+chr);
+            this.state = Tokenizer.BOGUS_COMMENT;
+            break;
+        }
+        break;
 
-//           default:
-//             this.parser.error('Unexpected character before attribute value: '+chr);
-//             break;
-//         }
-//         break;
+      case Tokenizer.END_TAG_NAME:
+        switch (true) {
 
-// ////////// ATTR_VALUE
-//       case ATTR_VALUE:
-//         switch (true) {
-//           case this.attrDelimiter === chr:
-//             this.emit();
-//             this.emit({
-//               type: Token.END_ATTR,
-//             });
-//             this.state = AFTER_ATTR;
-//             break;
+          case '/' === chr:
+            this.state = Tokenizer.SELF_CLOSING_START_TAG;
+            break;
 
-//           default:
-//             this.token.data += chr;
-//             break;
-//         }
-//         break;
+          case '>' === chr:
+            this.state = Tokenizer.DATA;
+            this.token.end = this.parser.stream.pointer;
+            this.emit();
+            break;
 
-// ////////// AFTER_ATTR
-//       case AFTER_ATTR:
-//         switch (true) {
-//           case whitespace(chr):
-//             this.state = BEFORE_ATTR_KEY;
-//             break;
+          // TODO
+          // case '\0':
+          //   break;
 
-//           case '>' === chr:
-//             this.state = BEFORE_ATTR_KEY;
-//             this.process(chr);
-//             break;
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in end tag name');
+            this.state = Tokenizer.DATA;
+            this.process(chr);
+            break;
 
-//           default:
-//             // this.token.data += chr;
-//             this.parser.error('Unexpected character after attribute: '+chr);
-//             break;
-//         }
-//         break;
+          default:
+            this.token.name += chr;
+            break;
+        }
+        break;
 
-//       default:
-//         this.parser.error('Unexpected tokenizer state: '+this.state.toUpperCase().replace(' ', '_'));
-//         break;
-//     }
-//   };
+      case Tokenizer.BEFORE_ATTR_KEY:
+        switch (true) {
 
-//   Tokenizer.prototype.emit = function (token) {
-//     if (this.token) {
-//       token = this.token;
-//     }
-//     console.log('State:', token.type, 'Mode:', this.parser.treeConstructor.mode);
-//     this.parser.treeConstructor.process(token);
-//     this.token = null;
-//   };
+          case util.whitespace(chr):
+            break; // Ignore
 
-//   // root.Structure || (root.Structure = {});
-//   root.Structure.Tokenizer = Tokenizer;
-//   root.Structure.Token = Token;
+          case util.alpha(chr):
+            this.state = Tokenizer.ATTR_KEY;
+            this.token = {
+              type: Token.ATTR_KEY,
+              name: chr,
+            };
+            break;
 
-// }(this, this.Structure));
+          case '>' === chr:
+            this.state = Tokenizer.DATA;
+            this.emit({
+              type: Token.START_TAG_CLOSE
+            });
+            break;
+
+          default:
+            this.parser.error('Unexpected character before attribute key: '+chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.ATTR_KEY:
+        switch (true) {
+          case util.alpha(chr):
+            this.token.name += chr;
+            break;
+
+          case '=' === chr:
+            this.state = Tokenizer.BEFORE_ATTR_VALUE;
+            this.emit();
+            break;
+
+          default:
+            this.parser.error('Unexpected character in attribute key: '+chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.BEFORE_ATTR_VALUE:
+        switch (true) {
+
+          case util.whitespace(chr):
+            break; // Ignore
+
+          case '"' === chr:
+          case '\'' === chr:
+            this.attrDelimiter = chr;
+            this.state = Tokenizer.ATTR_VALUE;
+            this.token = {
+              type: Token.TEXT,
+              data: '',
+            };
+            break;
+
+          default:
+            this.parser.error('Unexpected character before attribute value: '+chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.ATTR_VALUE:
+        switch (true) {
+          case this.attrDelimiter === chr:
+            this.state = Tokenizer.AFTER_ATTR;
+            this.emit();
+            this.emit({
+              type: Token.END_ATTR,
+            });
+            break;
+
+          default:
+            this.token.data += chr;
+            break;
+        }
+        break;
+
+      case Tokenizer.AFTER_ATTR:
+        switch (true) {
+
+          case util.whitespace(chr):
+            this.state = Tokenizer.BEFORE_ATTR_KEY;
+            break;
+
+          case '>' === chr:
+            this.state = Tokenizer.BEFORE_ATTR_KEY;
+            this.process(chr);
+            break;
+
+          default:
+            this.parser.error('Unexpected character after attribute: '+chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.PLAINTEXT:
+        switch (true) {
+          
+          case '<' === chr:
+            this.state = Tokenizer.PLAINTEXT_LESS_THAN_SIGN;
+            break;
+
+          case -1 === chr:
+            this.state = Tokenizer.DATA;
+            this.process(chr);
+            break;
+
+          default:
+            this.emit({
+              type: Token.TEXT,
+              data: chr
+            });
+            // this.parser.error('Unexpected character in plaintext: '+chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.PLAINTEXT_LESS_THAN_SIGN:
+        switch (true) {
+          
+          case '/' === chr:
+            this.buffer = chr;
+            this.state = Tokenizer.PLAINTEXT_END_TAG_OPEN;
+            break;
+
+          default:
+            this.state = Tokenizer.PLAINTEXT;
+            this.emit({
+              type: Token.TEXT,
+              data: '<'
+            });
+            this.process(chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.PLAINTEXT_END_TAG_OPEN:
+        switch (true) {
+
+          case util.uppercase(chr):
+            chr = chr.toLowerCase();
+
+          case util.lowercase(chr):
+            this.token = {
+              type: Token.END_TAG,
+              name: chr,
+            };
+            this.buffer += chr;
+            this.state = Tokenizer.PLAINTEXT_END_TAG_NAME;
+            break;
+
+          default:
+            this.state = Tokenizer.PLAINTEXT;
+            this.emit({
+              type: Token.TEXT,
+              data: '</'
+            });
+            this.process(chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.PLAINTEXT_END_TAG_NAME:
+        switch (true) {
+
+          case util.whitespace(chr):
+            // TODO: If the current end tag token is an appropriate end tag token, 
+            // then switch to the before attribute name state. 
+            // Otherwise, treat it as per the "anything else" entry below.
+            this.state = Tokenizer.BEFORE_ATTR_KEY;
+            break;
+
+          case '/' === chr:
+            // TODO: If the current end tag token is an appropriate end tag token, 
+            // then switch to the self-closing start tag state. 
+            // Otherwise, treat it as per the "anything else" entry below.
+            this.state = Tokenizer.SELF_CLOSING_START_TAG;
+            break;
+
+          case '>' === chr:
+            this.state = Tokenizer.DATA;
+            this.token.end = this.parser.stream.pointer;
+            this.emit();
+            break;
+
+          case util.uppercase(chr):
+            this.token.name += chr.toLowerCase();
+            this.buffer += chr;
+            break;
+
+          case util.lowercase(chr):
+            this.token.name += chr;
+            this.buffer += chr;
+            break;
+
+          default:
+            this.state = Tokenizer.PLAINTEXT;
+            this.emit({
+              type: Token.TEXT,
+              data: '</' + this.buffer
+            });
+            this.buffer = '';
+            this.process(chr);
+            break;
+        }
+        break;
+
+      case Tokenizer.MARKUP_DECLARATION:
+        switch (true) {
+
+          case '--' === chr + this.parser.stream.next():
+            this.parser.stream.shift(1);
+            this.token = {
+              type: Token.COMMENT,
+              data: ''
+            };
+            this.state = Tokenizer.COMMENT_START;
+            break;
+
+          case 'DOCTYPE' === chr.toUpperCase() + this.parser.stream.next(6).toUpperCase():
+            this.parser.stream.shift(6);
+            this.state = Tokenizer.DOCTYPE;
+            break;
+          
+          // Otherwise, if there is an adjusted current node and it is not an element in 
+          // the HTML namespace and the next seven characters are a case-sensitive match 
+          // for the string "[CDATA[" (the five uppercase letters "CDATA" with a U+005B 
+          // LEFT SQUARE BRACKET character before and after), then consume those characters 
+          // and switch to the CDATA section state.
+
+          // Otherwise, this is a parse error. Switch to the bogus comment state. The next 
+          // character that is consumed, if any, is the first character that will be in the comment.
+          default:
+            this.parser.notice('Unexpected character in markup declaration: ' + chr);
+            this.state = Tokenizer.BOGUS_COMMENT;
+            break;
+        }
+        break;
+
+      case Tokenizer.COMMENT_START:
+        switch (true) {
+
+          case '-' === chr:
+            this.state = Tokenizer.COMMENT_START_DASH;
+            break;
+
+          // TODO
+          // case '\0' === chr:
+          //   break;
+
+          case '>' === chr:
+            this.parser.notice('Unexpected character in comment start: ' + chr);
+            this.state = Tokenizer.DATA;
+            this.emit();
+            break;
+
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in comment start');
+            this.state = Tokenizer.DATA;
+            this.emit();
+            this.process(chr);
+            break;
+
+          default:
+            this.token.data += chr;
+            this.state = Tokenizer.COMMENT;
+            break;
+        }
+        break;
+
+      case Tokenizer.COMMENT:
+        switch (true) {
+
+          case '-' === chr:
+            this.state = Tokenizer.COMMENT_END_DASH;
+            break;
+
+          // TODO
+          // case '\0' === chr:
+          //   break;
+
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in comment');
+            this.state = Tokenizer.DATA;
+            this.emit();
+            this.process(chr);
+            break;
+
+          default:
+            this.token.data += chr;
+            break;
+        }
+        break;
+
+      case Tokenizer.COMMENT_END_DASH:
+        switch (true) {
+
+          case '-' === chr:
+            this.state = Tokenizer.COMMENT_END;
+            break;
+
+          // TODO
+          // case '\0' === chr:
+          //   break;
+
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in comment end dash');
+            this.state = Tokenizer.DATA;
+            this.emit();
+            this.process(chr);
+            break;
+
+          default:
+            this.token.data += '-' + chr;
+            break;
+        }
+        break;
+
+      case Tokenizer.COMMENT_END:
+        switch (true) {
+
+          case '>' === chr:
+            this.state = Tokenizer.DATA;
+            this.token.end = this.parser.stream.pointer;
+            this.emit();
+            break;
+
+          // TODO
+          // case '\0' === chr:
+          //   break;
+
+          case '!' === chr:
+            this.parser.notice('Unexpected ! in comment end');
+            this.state = Tokenizer.COMMEND_END_BANG;
+            break;
+
+          case '-' === chr:
+            this.parser.notice('Unexpected - in comment end');
+            this.token.data += chr;
+            break;
+
+          case -1 === chr:
+            this.parser.notice('Unexpected end of file in comment end');
+            this.state = Tokenizer.DATA;
+            this.emit();
+            this.process(chr);
+            break;
+
+          default:
+            this.token.data += '--' + chr;
+            this.state = Tokenizer.COMMENT;
+            break;
+        }
+        break;
+
+      default:
+        this.parser.error('Unexpected tokenizer state: '+this.state.toUpperCase().replace(' ', '_'));
+        break;
+    }
+  };
+
+  Tokenizer.prototype.emit = function (token) {
+    if (this.token) {
+      token = this.token;
+    }
+
+    this.parser.treeConstructor.process(token);
+
+    this.token = null;
+  };
+
+  core.Token = Token;
+  core.Tokenizer = Tokenizer;
+
+}(
+  window.structure,
+  window.structure.util
+));

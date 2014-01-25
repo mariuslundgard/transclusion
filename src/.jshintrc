@@ -7,7 +7,7 @@
     "immed": true,
     "noarg": true,
     "onevar": true,
-    "quotmark": "double",
+    "quotmark": "single",
     "smarttabs": true,
     "trailing": true,
     "undef": true,
@@ -18,8 +18,10 @@
     "browser": true,
 
     "globals": {
-        "jQuery": true,
+        "root": true,
         "define": true,
-        "module": true
+        "require": true,
+        "Structure": true,
+        "console": true
     }
 }

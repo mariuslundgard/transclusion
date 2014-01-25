@@ -1,6 +1,4 @@
-/*jslint browser: true*/
-/*global define*/
-define([], function () {
+(function (core) {
 
   var CharStream = function (str, options) {
     this.initialize(str, options);
@@ -16,40 +14,45 @@ define([], function () {
     this.line = 1;
     this.column = 1;
 
-    //
     this.options = options || {};
     this.options.sendEOF = (undefined === this.options.sendEOF); // Defaults to TRUE
+  };
+
+  CharStream.prototype.shift = function (num) {
+    this.pointer += num;
+  };
+
+  CharStream.prototype.next = function (num) {
+    if (undefined === num) {
+      num = 1;
+    }
+
+    return this.input.substr(this.pointer, num);
   };
 
   CharStream.prototype.consume = function (fn) {
     var chr;
 
-    // Let the callback process the input character by character
     while (this.pointer < this.size) {
-      chr = this.input[this.pointer++];
+      chr = this.input.charAt(this.pointer++);
+      
       this.column++;
-      if ("\n" === chr) {
+
+      if ('\n' === chr) {
         this.line++;
         this.column = 1;
       }
+
+      // Let the callback process the input character by character
       fn(chr);
     }
 
-    // Send EOF character (-1)
     if (this.options.sendEOF) {
-      fn(-1);
+      fn( -1 );
     }
   };
 
-  return CharStream;
-});
-
-// (function (root, Structure) {
-//   'use strict';
-
-
-
-//   // Export
-//   root.Structure.CharStream = CharStream;
-
-// }(this, this.Structure));
+  core.CharStream = CharStream;
+}(
+  window.structure
+));

@@ -1,65 +1,81 @@
-define([
-  // "./core"
-], function () {
-  "use strict";
+(function(core, Node) {
 
-  var Compiler = {};
-  // Structure.Compiler
+  var Compiler = function (options) {
+    this.initialize(this, options);
+  };
 
-  // Structure.Compiler = function (options) {
-  //   this.initialize.call(this, options);
-  // };
-
-  // Structure.Compiler.prototype.initialize = function (options) {
-  //   options || (options = {});
-  // };
+  Compiler.prototype.initialize = function (options) {
+    options || (options = {});
+  };
   
-  // Structure.Compiler.prototype.compile = function (document) {
-  //   return compileNodes(["&lt;!DOCTYPE html&gt;\n"], document.childNodes).join("");
-  // };
+  Compiler.prototype.compile = function (document) {
+    return compileNodes([ '<!DOCTYPE html>\n' ], document.childNodes).join('');
+  };
 
-  // function compileNodes(cache, nodeList) {
-  //   for (var i = 0; i < nodeList.length; i++) {
-  //       cache = compileNode(cache, nodeList[i]);
-  //   }
-  //   return cache;
-  // }
+  Compiler.prototype.compileNode = function (node) {
+    // return compileNodes([], [node]).join('');
+    return this.compileNodes([node]);
+  };
 
-  // function compileNode(cache, node)
-  // {
-  //   switch (node.type) {
+  Compiler.prototype.compileNodes = function (nodeList) {
+    return compileNodes([], nodeList).join('');
+  };
 
-  //     case Node.TEXT:
-  //       if ("<" === node.data) {
-  //         cache.push("&lt;");
-  //       } else if (">" === node.data) {
-  //         cache.push("&gt;");
-  //       } else {
-  //         cache.push(node.data);
-  //       }
-  //       break;
+  function compileNodes(cache, nodeList) {
 
-  //     case Node.ELEMENT:
-  //       cache.push("&lt;", node.name);
-  //       cache = compileNodes(cache, node.attrs);
-  //       cache.push("&gt;");
-  //       cache = compileNodes(cache, node.childNodes);
-  //       cache.push("&lt;/", node.name, "&gt;");
-  //       break;
+    if (!nodeList) {
+      return [];
+    }
 
-  //     case Node.ATTR:
-  //       cache.push(" ", node.name, "=\"");
-  //       // cache = compileNodes(cache, node.childNodes);
-  //       cache.push("\"");
-  //       break;
+    for (var i = 0; i < nodeList.length; i++) {
+        cache = compileNode(cache, nodeList[i]);
+    }
 
-  //     default:
-  //       throw new Error("Compile error: unknown node type: "+node.type);
-  //   }
+    return cache;
+  }
 
-  //   return cache;
-  // }
+  function compileNode(cache, node) {
+    switch (node.type) {
 
-  return Compiler;
+      case Node.TEXT:
+        cache.push(node.data);
+        break;
 
-});
+      case Node.ELEMENT:
+
+        if (node.getDirective().compile) {
+          cache = node.getDirective().compile(cache, node);
+        } else {
+          cache.push('<', node.name);
+          cache = compileNodes(cache, node.attrs);
+          cache.push('>');
+
+          if (!node.isVoidElement()) {
+            cache = compileNodes(cache, node.childNodes);
+            cache.push('</', node.name, '>');
+          }
+        }
+        break;
+
+      case Node.ATTR:
+        cache.push(' ', node.name, '=\"');
+        cache = compileNodes(cache, node.childNodes);
+        cache.push('\"');
+        break;
+
+      case Node.COMMENT:
+        cache.push('<!--', node.data, '-->');
+        break;
+
+      default:
+        throw new Error('Compile error: unknown node type: '+node.type);
+    }
+
+    return cache;
+  }
+
+  core.Compiler = Compiler;
+}(
+  window.structure,
+  window.structure.Node
+));

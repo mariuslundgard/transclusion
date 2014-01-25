@@ -1,27 +1,38 @@
-/*jshint unused: vars */
+// define([
+//   './core'
+// ], function(Structure) {
+(function (core) {
 
-// function copy (prototype) {
-//   var c, obj = {};
-//   for(c in prototype) {
-//     obj[c] = prototype[c];
-//   }
-//   return obj;
-// }
+  core.util = {};
 
-// function uppercase(chr) {
-//   return "A" <= chr && chr <= "Z";
-// }
+  core.util.copy = function (prototype) {
+    var c, obj = {};
+    for (c in prototype) {
+      obj[c] = prototype[c];
+    }
+    return obj;
+  };
 
-// function lowercase(chr) {
-//   return "a" <= chr && chr <= "z";
-// }
+  core.util.uppercase = function (chr) {
+    return 'A' <= chr && chr <= 'Z';
+  };
 
-// function alpha(chr) {
-//   return uppercase(chr) || lowercase(chr);
-// }
+  core.util.lowercase = function (chr) {
+    return 'a' <= chr && chr <= 'z';
+  };
 
-// function whitespace(chr) {
-//   return 0 <= ["\n", "\t", "\r", " "].indexOf(chr);
-// }
+  core.util.num = function (chr) {
+    return '0' <= chr && chr <= '9';
+  };
 
-// (window.Structure || (window.Structure = {}))
+  core.util.alpha = function (chr) {
+    return core.util.uppercase(chr) || core.util.lowercase(chr);
+  };
+
+  core.util.whitespace = function (chr) {
+    return -1 < [ '\n', '\t', '\r', ' ' ].indexOf(chr);
+  };
+
+}(
+  window.structure
+));

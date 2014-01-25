@@ -1,35 +1,14 @@
-module.exports = function(grunt) {
-  'use strict';
+// 'use strict';
 
-  function readOptionalJSON( filepath ) {
+module.exports = function(grunt) {
+
+  function readOptionalJSON(filepath) {
     var data = {};
     try {
-      data = grunt.file.readJSON( filepath );
-    } catch ( e ) {}
+      data = grunt.file.readJSON(filepath);
+    } catch (e) {}
     return data;
   }
-
-  var srcHintOptions = readOptionalJSON( "src/.jshintrc" );
-
-  // Grunt plugins
-  // grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  // grunt.loadNpmTasks('grunt-bump');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  // grunt.loadNpmTasks('grunt-contrib-nodeunit');
-  // grunt.loadNpmTasks('grunt-contrib-clean');
-  // grunt.loadNpmTasks('grunt-contrib-copy');
-  // grunt.loadNpmTasks('grunt-contrib-connect');
-  // grunt.loadNpmTasks('grunt-contrib-compress');
-  // grunt.loadNpmTasks('grunt-jasmine-node');
-  // grunt.loadNpmTasks('grunt-ddescribe-iit');
-  // grunt.loadNpmTasks('grunt-merge-conflict');
-  // grunt.loadNpmTasks('grunt-parallel');
-  // grunt.loadNpmTasks('grunt-shell');
-
-  // Load tasks
-  grunt.loadTasks('build/tasks');
 
   // Project configuration.
   grunt.initConfig({
@@ -37,71 +16,81 @@ module.exports = function(grunt) {
 
     build: {
       all: {
-        dest: "dist/structure.js",
-        minimum: [
-          "core",
-        //   "selector"
-        ],
-        // Exclude specified modules if the module matching the key is removed
-        // removeWith: {
-        //   ajax: [ "manipulation/_evalUrl" ],
-        //   callbacks: [ "deferred" ],
-        //   css: [ "effects", "dimensions", "offset" ],
-        //   sizzle: [ "css/hiddenVisibleSelectors", "effects/animatedSelector" ]
-        // }
+        name: 'structure',
+        dest: 'dist/structure.js',
+        wrap: {
+          startFile: 'src/parts/start.frag',
+          endFile: 'src/parts/end.frag'
+        }
       }
     },
 
     jsonlint: {
       pkg: {
-        src: [ "package.json" ]
+        src: [ 'package.json' ]
       },
       jscs: {
-        src: [ ".jscs.json" ]
+        src: [ 'src/.jscs.json' ]
       },
-      bower: {
-        src: [ "bower.json" ]
+    //   bower: {
+    //     src: [ 'bower.json' ]
+    //   }
+    },
+
+    requirejs: {
+      compile: {
+        options: {
+          baseUrl: 'src',
+          dir: 'dist',
+          optimize: 'none',
+          wrap: {
+            startFile: 'src/parts/start.frag',
+            endFile: 'src/parts/end.frag'
+          }
+        }
       }
     },
 
     jscs: {
-      src: "src/**/*.js",
-      gruntfile: "Gruntfile.js",
-      tasks: "build/tasks/*.js"
+      src: 'src/*.js',
+      gruntfile: 'Gruntfile.js',
+      tasks: 'build/tasks/*.js',
+      options: {
+        config: 'src/.jscs.json'
+      }
     },
 
     jshint: {
       all: {
         src: [
-          "src/**/*.js", //"Gruntfile.js", "test/**/*.js", "build/tasks/*",
-          // "build/{bower-install,release-notes,release}.js"
+          'src/**/*.js', 'Gruntfile.js', 'test/**/*.js'
         ],
         options: {
           jshintrc: true
         }
       },
-      dist: {
-        src: "dist/structure.js",
-        options: srcHintOptions
-      }
+      // dist: {
+      //   src: 'dist/structure.js',
+      //   options: readOptionalJSON('src/.jshintrc')
+      // }
     },
 
     uglify: {
       build: {
-        src: 'src/<%= pkg.name %>.js',
-        dest: 'dist/<%= pkg.name %>.min.js'
+        src: 'dist/structure.js',
+        dest: 'dist/structure.min.js'
       },
       options: {
         preserveComments: false,
-        sourceMap: "dist/structure.min.map",
-        sourceMappingURL: "structure.min.map",
-        report: "min",
+        sourceMap: 'dist/structure.min.map',
+        sourceMappingURL: 'structure.min.map',
+        report: 'min',
         beautify: {
           ascii_only: true
         },
-        banner: "/*! Structure v<%= pkg.version %> | " +
-            "(c) 2013, <%= grunt.template.today('yyyy') %> Marius Lundgård | " +
-            "mariuslundgard.com/structure.js/license */",
+        banner: '/*! Structure v<%= pkg.version %> | ' +
+            '(c) <%= grunt.template.today("yyyy") %> Marius Lundgård | ' +
+            'http://mariuslundgard.com/structure.js/license */',
         compress: {
           hoist_funs: false,
           loops: false,
@@ -111,32 +100,31 @@ module.exports = function(grunt) {
     },
 
     watch: {
-      files: [ "<%= jshint.all.src %>" ],
-      tasks: "dev"
-    }//,
-
-    // browserify: {
-    //   dist: {
-    //     files: {
-    //       'dist/structure.js': [
-    //         'src/test.js'
-    //       ],
-    //     }//,
-    //     // options: {
-    //     //   transform: ['coffeeify']
-    //     // }
-    //   }
-    // }
+      files: [ '<%= jshint.all.src %>' ],
+      tasks: 'dev'
+    }
   });
 
-  // Default task(s).
-  // grunt.registerTask('default', ['uglify']);
+  // Grunt plugins
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
+  grunt.loadNpmTasks('grunt-jscs-checker');
+
+  // grunt.loadNpmTasks('grunt-contrib-watch');
+  // grunt.loadNpmTasks('grunt-contrib-jshint');
+  // grunt.loadNpmTasks('grunt-contrib-requirejs');
+  // grunt.loadNpmTasks('grunt-contrib-uglify');
+
+  // Load tasks
+  grunt.loadTasks('build/tasks');
 
   // Short list as a high frequency watch task
-  grunt.registerTask( "dev", [ "build:*:*", "jshint"/*, "jscs"*/ ] );
+  grunt.registerTask('dev', [ 'build', 'jshint', 'jscs' ]);
 
-  // Default task.
-  grunt.registerTask('test', [/*'clean',*/ 'uglify'/*, 'browserify', 'nodeunit'*/]);
-  grunt.registerTask('default', ['uglify' /*'browserify', 'jshint', 'test'*/]);
-
+  // Default task(s)
+  grunt.registerTask('test', [/*'clean',*/ /*'uglify'*/ /*, 'browserify', 'nodeunit'*/]);
+  grunt.registerTask('default', [ 'dev', /*'requirejs',*/ 'uglify' /*'browserify', 'jshint', 'test'*/]);
 };

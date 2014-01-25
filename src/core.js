@@ -1,11 +1,11 @@
-define([
-  "./compiler"
-], function (Compiler) {
-  "use strict";
-
-  var Structure = {
-    compiler: new Compiler()
+(function (root) {
+  
+  root.structure = {
+    version: '0.1.0alpha',
   };
 
-  return Structure;
-});
+  console.log('namespace: structure.*');
+
+}(
+  window
+));

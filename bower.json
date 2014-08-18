@@ -1,8 +1,8 @@
 {
   "name": "structure.js",
-  "author": "Marius Lundgård",
+  "version": "0.1.0-alpha",
+  "author": "Marius Lundgård <studio@mariuslundgard.com>",
   "dependencies": {
-    "underscore": "~1.5.2",
-    "pouchdb": "~1.1.0"
+    "underscore": "~1.5.2"
   }
 }

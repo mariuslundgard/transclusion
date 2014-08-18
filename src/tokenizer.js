@@ -139,6 +139,7 @@
 
           case '>' === chr:
             this.state = Tokenizer.BEFORE_ATTR_KEY;
+            this.token.innerStartPointer = this.parser.stream.pointer;
             this.emit();
             this.process(chr);
             break;
@@ -165,7 +166,8 @@
           case util.alpha(chr):
             this.token = {
               type: Token.END_TAG,
-              name: chr
+              name: chr,
+              innerEndPointer: this.tagStartPointer
             };
             this.state = Tokenizer.END_TAG_NAME;
             break;
@@ -234,7 +236,8 @@
           case '>' === chr:
             this.state = Tokenizer.DATA;
             this.emit({
-              type: Token.START_TAG_CLOSE
+              type: Token.START_TAG_CLOSE,
+              innerStartPointer: this.parser.stream.pointer
             });
             break;
 

@@ -59,6 +59,38 @@
 
       getDirective: function () {
         return this.document.getDirective(this.name);
+      },
+
+      getChildrenByName: function (name) {
+        var i, children = [];
+        for (i = 0; i < this.childNodes.length; i++ ){
+          if (name == this.childNodes[i].name) {
+            children.push(this.childNodes[i]);
+          }
+        }
+        return children;
+      },
+
+      getUniquePath: function () {
+        var path;
+        var node = this;
+        var name;
+        var parent;
+        var siblings;
+
+        while ('head' !== node.parent.name) {
+          name = node.name;
+          parent = node.parent;
+          // console.log('NODE', node.parent);
+          siblings = parent.getChildrenByName(name);
+          if (name != 'body' && name != 'head' && siblings.length > 1) {
+            name += ':nth-child(' + (node.index+1) + ')';
+          }
+          path = name + (path ? '>' + path : '');
+          node = parent;
+        }
+
+        return path;
       }
     }
   );

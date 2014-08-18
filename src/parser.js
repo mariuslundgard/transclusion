@@ -1,3 +1,5 @@
+
+/*
 (function (core, Document, CharStream, Tokenizer, TreeConstructor) {
   
   var Parser = function (options) {
@@ -51,3 +53,5 @@
   window.structure.Tokenizer,
   window.structure.TreeConstructor
 ));
+
+*/

@@ -310,6 +310,7 @@
 
           case Token.START_TAG_CLOSE === token.type:
             console.log('>');
+            this.node.innerStartPointer = token.innerStartPointer;
             if (this.node.isVoidElement()) {
               // alert(1);
               this.popNode();
@@ -318,6 +319,7 @@
 
           case Token.END_TAG === token.type && 'body' === token.name:
             console.log('</'+this.node.name+'>');
+            this.node.innerEndPointer = token.innerEndPointer;
             this.node.endPointer = token.end;
             this.popNode();
             this.mode = TreeConstructor.AFTER_BODY;
@@ -325,6 +327,7 @@
 
           case Token.END_TAG === token.type && 'html' === token.name:
             console.log('</'+this.node.name+'>');
+            this.node.innerEndPointer = token.innerEndPointer;
             this.node.endPointer = token.end;
             this.popNode();
             this.mode = TreeConstructor.AFTER_BODY;
@@ -333,6 +336,7 @@
 
           case Token.END_TAG === token.type:
             console.log('</'+this.node.name+'>');
+            this.node.innerEndPointer = token.innerEndPointer;
             this.node.endPointer = token.end;
             this.popNode();
             break;

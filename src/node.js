@@ -1,3 +1,4 @@
+/*
 // define([
 //   './core'
 // ], function(Structure) {
@@ -44,6 +45,9 @@
 
     this.startPointer = null
     this.endPointer = null;
+
+    this.innerStartPointer = null;
+    this.innerEndPointer = null;
     // console.log('new structure.Node ('+this.type+')');
   };
 
@@ -53,7 +57,7 @@
 
   Node.prototype.appendChild = function (node) {
     node.setParent(this);
-    
+
     if (Node.TEXT !== node.type || !node.whiteSpace) {
       if (this.lastChild) {
         node.setIndex(this.lastChild.index + 1);
@@ -122,3 +126,4 @@
 }(
   window.structure
 ));
+*/

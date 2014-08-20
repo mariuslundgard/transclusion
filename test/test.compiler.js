@@ -1,25 +1,23 @@
-var expect = chai.expect,
-    src = structure;
+var expect = chai.expect;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 describe('Compiler', function() {
   describe('constructor', function() {
-    it('should set compiler\'s parser', function() {
-      // var doc = new src.Document();
-      // var prs = new src.Parser(doc);
-      // var tok = new src.Compiler(prs);
-      // expect(tok.parser).to.be.an.instanceof(src.Parser);
+    it('should set compiler\'s document', function() {
+      var doc = new structure.Document();
+      var cmp = new structure.Compiler(doc);
+      expect(cmp.document).to.be.an.instanceof(structure.Document);
     });
   });
 
   describe('#compile', function() {
     it('should compile', function() {
-      var doc = new src.Document('test');
+      var doc = new structure.Document('test');
 
       doc.parse();
 
-      var cmp = new src.Compiler(doc);
+      var cmp = new structure.Compiler(doc);
       var html = cmp.compile();
 
       expect(html).to.equal('<html><head><title></title></head><body>test</body></html>');

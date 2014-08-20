@@ -1,57 +1,80 @@
+function Parser(doc) {
+  if (! doc) {
+    throw new Error('Missing `document` for Parser');
+  }
+  this.document = doc;
+  this.treeConstructor = null;
+  this.tokenizer = null;
+  this.messages = [];
+}
 
-/*
-(function (core, Document, CharStream, Tokenizer, TreeConstructor) {
-  
-  var Parser = function (options) {
-    this.initialize(options);
-  };
+// exports
+structure.Parser = Parser;
 
-  Parser.prototype.initialize = function (options) {
-    this.options = options || {};
-    this.options.sendEOF = (undefined === this.options.sendEOF); // Defaults to TRUE
-
-    if (this.options.document) {
-      this.document = this.options.document;
+Parser.prototype = {
+  reset: function () {
+    if (this.treeConstructor) {
+      this.treeConstructor.reset();
     }
-  };
+    if (this.tokenizer) {
+      this.tokenizer.reset();
+    }
+    this.messages = [];
+  },
 
-  Parser.prototype.parse = function (input) {
+  parse: function (input) {
+    this.getTokenizer().tokenize(input);
+  },
 
-    this.document        = this.document ? this.document : new Document();
-    this.stream          = new CharStream(input, { sendEOF: this.options.sendEOF });
-    this.tokenizer       = new Tokenizer(this);
-    this.treeConstructor = new TreeConstructor(this);
+  handleToken: function (tok) {
+    this.getTreeConstructor().handleToken(tok);
+  },
 
-    this.stream.consume(
-      this.tokenizer.process.bind(this.tokenizer)
-    );
+  getTokenizer: function () {
+    if (null === this.tokenizer) {
+      this.tokenizer = new structure.Tokenizer(this);
+    }
+    return this.tokenizer;
+  },
 
-    return this.document;
-  };
+  getTreeConstructor: function () {
+    if (null === this.treeConstructor) {
+      this.treeConstructor = new structure.TreeConstructor(this);
+    }
+    return this.treeConstructor;
+  },
 
-  Parser.prototype.error = function (message) {
-    var err = new Error('Parse error: '+message);
-    
-    err.tokenizerState = this.treeConstructor.state;
-    err.treeConstructorMode = this.tokenizer.mode;
+  report: function (type, message) {
+    if ('exception' === type) {
+      throw new Error(message);
+    }
 
-    throw err;
-  };
+    if ('notice' === type) {
+      console.warn('>> Parser.NOTICE', message);
+    } else if ('error' === type) {
+      console.error('>> Parser.ERROR', message);
+    } else {
+      // TODO
+      // if (this.document.debug) {
+      //   console.log('>> Parser.' + type.toUpperCase(), message);
+      // }
+    }
 
-  Parser.prototype.notice = function (message) {
-    var err = new Error('Parse notice: '+message);
-    
-    err.tokenizerState = this.treeConstructor.state;
-    err.treeConstructorMode = this.tokenizer.mode;
-  };
+    this.messages.push({
+      type: type,
+      message: message
+    });
+  },
 
-  core.Parser = Parser;
-}(
-  window.structure,
-  window.structure.Document,
-  window.structure.CharStream,
-  window.structure.Tokenizer,
-  window.structure.TreeConstructor
-));
-
-*/
+  debug: function () {
+    var i, len, msg;
+    for (i = 0, len = arguments.length; i < len; i++) {
+      msg = arguments[i];
+      if (typeof msg === 'object') {
+        throw new Error('Can\'t debug objects (yet)');
+      } else {
+        this.report('debug', msg);
+      }
+    }
+  }
+};

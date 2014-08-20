@@ -6,9 +6,7 @@
     "while",
     "do",
     "try",
-    "catch",
-    "case",
-    "default"
+    "catch"
   ],
 
   "requireSpaceAfterKeywords": [
@@ -25,46 +23,6 @@
   "requireSpacesInsideObjectBrackets": "allButNested",
   "requireSpacesInsideArrayBrackets": "allButNested",
 
-  "disallowLeftStickedOperators": [
-    "?",
-    "-",
-    "/",
-    "*",
-    "=",
-    "==",
-    "===",
-    "!=",
-    "!==",
-    ">",
-    ">=",
-    "<",
-    "<="
-  ],
-
-  "disallowRightStickedOperators": [
-    "?",
-    "/",
-    "*",
-    ":",
-    "=",
-    "==",
-    "===",
-    "!=",
-    "!==",
-    ">",
-    ">=",
-    "<",
-    "<="
-  ],
-
-  "requireRightStickedOperators": [
-    "!"
-  ],
-
-  "requireLeftStickedOperators": [
-    ","
-  ],
-
   "disallowKeywords": [
     "with"
   ],
@@ -75,10 +33,5 @@
     "else"
   ],
 
-  "requireLineFeedAtFileEnd": true,
-
-  "excludeFiles": [
-    "src/parts/header.js",
-    "src/parts/footer.js"
-  ]
+  "requireLineFeedAtFileEnd": true
 }

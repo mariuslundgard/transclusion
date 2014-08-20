@@ -1,129 +1,123 @@
-/*
-// define([
-//   './core'
-// ], function(Structure) {
-(function (core) {
-  
-  var Node = function (type, name) {
-    this.initialize(type, name);
-  };
+function Node(type, name) {
+  this.type = type;
+  this.name = name;
+  this.document = null;
 
-  Node.ELEMENT  = 1;
-  Node.ATTRIBUTE  = 2;
-  Node.TEXT  = 3;
-  Node.CDATA_SECTION  = 4;
-  Node.ENTITY_REFERENCE  = 5;
-  Node.ENTITY  = 6;
-  Node.PROCESSING_INSTRUCTION  = 7;
-  Node.COMMENT  = 8;
-  Node.DOCUMENT  = 9;
-  Node.DOCUMENT_TYPE  = 10;
-  Node.DOCUMENT_FRAGMENT  = 11;
-  Node.NOTATION  = 12;
+  // child nodes
+  this.firstChild = null;
+  this.lastChild = null;
+  this.childNodes = [];
+  this.attrs = [];
+  this.index = 0;
 
-// DOCUMENT_POSITION_DISCONNECTED  = 1
-// DOCUMENT_POSITION_PRECEDING  = 2
-// DOCUMENT_POSITION_FOLLOWING  = 4
-// DOCUMENT_POSITION_CONTAINS  = 8
-// DOCUMENT_POSITION_CONTAINED_BY  = 16
-// DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC  = 32 
+  // pointers
+  this.parentNode = null;
+  this.childCount = 0;
 
-  Node.prototype.initialize = function (type, name) {
-    this.id = null;
-    this.type = type;
-    this.name = name;
-    this.index = 0;
-    this.document = null;
-    this.parent = null;
-    this.childNodes = [];
+  // offsets
+  this.outerStartOffset = null;
+  this.outerEndOffset = null;
+  this.innerStartOffset = null;
+  this.innerEndOffset = null;
 
-    this.lastChild = null;
-    this.firstChild = null;
+  if (! this.name) {
+    throw new Error('Missing `name`');
+  }
 
-    this.nextSibling = null;
-    this.previousSibling = null;
+  if (! this.type) {
+    throw new Error('Missing `type`');
+  }
+}
 
-    this.startPointer = null
-    this.endPointer = null;
+// exports
+structure.Node = Node;
+structure.nodes = {};
 
-    this.innerStartPointer = null;
-    this.innerEndPointer = null;
-    // console.log('new structure.Node ('+this.type+')');
-  };
+// constants
+Node.NODE_ELEMENT = 1;
+Node.NODE_DOCUMENT = 2;
+Node.NODE_TEXT = 3;
+Node.NODE_ATTR = 4;
+Node.NODE_EXPR = 5;
+Node.NODE_COMMENT = 6;
 
-  Node.prototype.setIndex = function (index) {
-    this.index = index;
-  };
+Node.prototype = {
+  setDocument: function (doc) {
+    this.document = doc;
+  },
 
-  Node.prototype.appendChild = function (node) {
-    node.setParent(this);
-
-    if (Node.TEXT !== node.type || !node.whiteSpace) {
-      if (this.lastChild) {
-        node.setIndex(this.lastChild.index + 1);
+  appendChild: function (node) {
+    node.parentNode = this;
+    if (Node.NODE_TEXT) {
+      if (! node.whiteSpace) {
+        node.index = this.childCount;
+        this.childCount++;
       }
-
-      if (this.lastChild) {
-        this.lastChild.nextSibling = node;
-        node.previousSibling = this.lastChild;
-      }
-
-      if (!this.firstChild) {
-        this.firstChild = node;
-      }
-
-      this.lastChild = node;
+    } else {
+      node.index = this.childCount;
+      this.childCount++;
     }
 
     this.childNodes.push(node);
-  };
 
-  Node.prototype.setDocument = function (document) {
-    this.document = document;
-  };
+    if (! this.firstChild) {
+      this.firstChild = node;
+    }
 
-  Node.prototype.setParent = function (parent) {
-    this.parent = parent;
-  };
+    this.lastChild = node;
 
-  Node.prototype.dump = function () {
-    var info = {
-      type: this.type,
-      name: this.name,
-    };
+    return node;
+  },
+
+  appendAttr: function (node) {
+    node.parentNode = this;
+    node.index = this.attrs.length;
+    this.attrs.push(node);
+    return node;
+  },
+
+  setOuterStartOffset: function (offset) {
+    if (undefined === offset) {
+      throw new Error('Argument to `setOuterStartOffset` cannot be undefined');
+    }
+    this.outerStartOffset = Number(offset);
+  },
+
+  setOuterEndOffset: function (offset) {
+    if (undefined === offset) {
+      throw new Error('Argument to `setOuterEndOffset` cannot be undefined');
+    }
+    this.outerEndOffset = Number(offset);
+  },
+
+  setInnerStartOffset: function (offset) {
+    if (undefined === offset) {
+      throw new Error('Argument to `setInnerStartOffset` cannot be undefined');
+    }
+    this.innerStartOffset = Number(offset);
+  },
+
+  setInnerEndOffset: function (offset) {
+    if (undefined === offset) {
+      throw new Error('Argument to `setInnerEndOffset` cannot be undefined');
+    }
+    this.innerEndOffset = Number(offset);
+  },
+
+  dump: function () {
+    var ret = {}, i, len;
+
+    ret.index = this.index;
+    ret.name = this.name;
+    ret.type = this.type;
 
     if (this.childNodes.length) {
-      info.childNodes = [];
-      var i;
-      for (i = 0; i < this.childNodes.length; i++) {
-        info.childNodes.push(this.childNodes[i].dump());
+      ret.childNodes = [];
+      for (i = 0, len = this.childNodes.length; i < len; i++) {
+        ret.childNodes.push(this.childNodes[i].dump());
       }
     }
 
-    return info;
-  };
-
-  Node.prototype.getUniqueSelector = function () {
-    if ('body' === this.name) {
-      return 'body';
-    }
-
-    if ('html' === this.name) {
-      return 'html';
-    }
-
-    var n, name = this.name;
-
-    if (n = this.getDirective().compileName) {
-      name = n;
-    }
-
-    return this.parent.getUniqueSelector() + ' > ' + name + ':nth-child(' + (this.index + 1) + ')';
-  };
-
-  core.Node = Node;
-
-}(
-  window.structure
-));
-*/
+    return ret;
+  }
+};

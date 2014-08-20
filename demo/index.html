@@ -1,14 +1,16 @@
+<!DOCTYPE html>
 <html class="full-height">
 <head>
 <meta charset="utf-8">
-<title>Structure Test</title>
+<title>Structure.js Demo</title>
 <link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/normalize.css">
 <link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/header.css">
 <link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/body.css">
+<link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/footer.css">
 <style>
 .message {
   padding: 5px 15px;
-  margin-top: 1px;
+  margin-bottom: 1px;
 }
 .debug {
   background: #9e9;
@@ -19,50 +21,36 @@
 .error {
   background: #f66;
 }
-
-/*#src, #dest {
-  white-space: nowrap;
-}*/
 </style>
 <link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/header.css">
 </head>
 <body class="form no-margin xs-max-size">
 
 <div class="full-height row rule-between">
-  <div class="column span-6">
-  	<div class="note">Parser Messages</div>
-  	<div id="messages"></div>
+  <div class="column span-2">
+  	<div class="scrollable full-height monospace code" id="tree"></div>
   </div>
   <div class="column span-2">
-  	<textarea class="full-height monospace text-field" id="src" style="background: #eee;">&lt;p&gt;test&lt;/p&gt;</textarea>
+    <div class="scrollable full-height" id="messages"></div>
   </div>
   <div class="column span-2">
-  	<textarea class="full-height monospace text-field" id="dest"></textarea>
+    <textarea class="full-height monospace code text-field" id="src" style="position: absolute; width: 100%; background: #eee;">&lt;p&gt;test&lt;/p&gt;</textarea>
   </div>
-  <div class="hidden column span-2">
-  	<iframe id="visual" style="width: 100%; height: 100%; border: none;"></iframe>
+  <div class="column span-2">
+  	<textarea class="full-height monospace code text-field" style="position: absolute; width: 100%;" id="dest" disabled></textarea>
+  </div>
+  <div class="column span-2">
+  	<iframe class="full-height" id="visual" style="position: absolute; width: 100%; border: none;" src="frame.html"></iframe>
   </div>
 </div>
-<script src="../new_src/element-rules.js"></script>
-<script src="../new_src/element-directive.js"></script>
-<script src="../new_src/element-directive-set.js"></script>
-<script src="../new_src/node.js"></script>
-<script src="../new_src/nodes/element.js"></script>
-<script src="../new_src/nodes/text.js"></script>
-<script src="../new_src/char-stream.js"></script>
-<script src="../new_src/char-tester.js"></script>
-<script src="../new_src/document.js"></script>
-<script src="../new_src/token.js"></script>
-<script src="../new_src/tokenizer.js"></script>
-<script src="../new_src/tree-constructor.js"></script>
-<script src="../new_src/parser.js"></script>
-<script src="../new_src/compiler.js"></script>
+<script src="../dist/structure.min.js"></script>
 
 <script>
 var srcEl = document.getElementById('src');
 var destEl = document.getElementById('dest');
 var visFrameEl = document.getElementById('visual');
 var msgEl = document.getElementById('messages');
+var treeEl = document.getElementById('tree');
 var doc = new structure.Document();
 doc.debug = true;
 
@@ -80,10 +68,12 @@ function reset () {
 
 function update() {
   var input = srcEl.value;
+  
   if (0 == input.length) {
     reset();
     return;
   }
+  
   try {
     var html = doc.compile(input);
   } catch (err) {
@@ -92,17 +82,31 @@ function update() {
     displayMessages([{ type: 'error', message: err.message + ' (see console for backtrace)'}]);
     return;
   }
+  
   destEl.value = html;
-  visFrameEl.src = 'data:text/html;charset=utf-8,' + escape(html);
+  
+  iframeWin = visFrameEl.contentWindow || visFrameEl;
+
+  if (iframeWin.update) {
+    iframeWin.update({
+      bodyHTML: doc.getCompiler().compileNodes(doc.body.childNodes)
+    });
+  }
+
   displayMessages(doc.parser.messages);
+  displayTree(doc);
 }
 
 function displayMessages(msg) {
   var i, len;
   msgEl.innerHTML = '';
   for (i = 0, len = msg.length; i < len; i++) {
-    msgEl.innerHTML += '<div class="monospace message ' + msg[i].type + '">' + enc(msg[i].message) + '</div>';
+    msgEl.innerHTML += '<div class="code monospace message ' + msg[i].type + '">' + enc(msg[i].message) + '</div>';
   }
+}
+
+function displayTree(doc) {
+  treeEl.innerHTML = '<pre class="monospace">' + JSON.stringify(doc.dump(), undefined, 1) + '</pre>';
 }
 
 function enc(str) {
@@ -110,7 +114,6 @@ function enc(str) {
     return '&#'+i.charCodeAt(0)+';';
   });
 }
-
 </script>
 </body>
 </html>

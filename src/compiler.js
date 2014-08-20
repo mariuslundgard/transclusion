@@ -1,81 +1,63 @@
-(function(core, Node) {
-
-  var Compiler = function (options) {
-    this.initialize(this, options);
-  };
-
-  Compiler.prototype.initialize = function (options) {
-    options || (options = {});
-  };
-  
-  Compiler.prototype.compile = function (document) {
-    return compileNodes([ '<!DOCTYPE html>\n' ], document.childNodes).join('');
-  };
-
-  Compiler.prototype.compileNode = function (node) {
-    // return compileNodes([], [node]).join('');
-    return this.compileNodes([node]);
-  };
-
-  Compiler.prototype.compileNodes = function (nodeList) {
-    return compileNodes([], nodeList).join('');
-  };
-
-  function compileNodes(cache, nodeList) {
-
-    if (!nodeList) {
-      return [];
-    }
-
-    for (var i = 0; i < nodeList.length; i++) {
-        cache = compileNode(cache, nodeList[i]);
-    }
-
-    return cache;
+function Compiler(doc) {
+  if (! doc) {
+    throw new Error('Missing `document` for Compiler');
   }
+  this.document = doc;
+}
 
-  function compileNode(cache, node) {
+// exports
+structure.Compiler = Compiler;
+
+Compiler.prototype = {
+  compile: function () {
+    return this.compileNodes(this.document.childNodes);
+  },
+
+  compileNodes: function (nodes) {
+    var i, len, ret = '';
+    for (i = 0, len = nodes.length; i < len; i++) {
+      ret += this.compileNode(nodes[i]);
+    }
+    return ret;
+  },
+
+  compileNode: function (node) {
+    var ret = '';
     switch (node.type) {
-
-      case Node.TEXT:
-        cache.push(node.data);
-        break;
-
-      case Node.ELEMENT:
-
-        if (node.getDirective().compile) {
-          cache = node.getDirective().compile(cache, node);
-        } else {
-          cache.push('<', node.name);
-          cache = compileNodes(cache, node.attrs);
-          cache.push('>');
-
-          if (!node.isVoidElement()) {
-            cache = compileNodes(cache, node.childNodes);
-            cache.push('</', node.name, '>');
-          }
+      case structure.Node.NODE_ELEMENT:
+        ret += '<';
+        ret += node.name;
+        ret += this.compileNodes(node.attrs);
+        ret += '>';
+        if (! node.isVoidElement()) {
+          ret += this.compileNodes(node.childNodes);
+          ret += '</';
+          ret += node.name;
+          ret += '>';
         }
         break;
 
-      case Node.ATTR:
-        cache.push(' ', node.name, '=\"');
-        cache = compileNodes(cache, node.childNodes);
-        cache.push('\"');
+      case structure.Node.NODE_TEXT:
+        ret += node.data;
         break;
 
-      case Node.COMMENT:
-        cache.push('<!--', node.data, '-->');
+      case structure.Node.NODE_COMMENT:
+        ret += '<!--';
+        ret += node.data;
+        ret += '-->';
+        break;
+
+      case structure.Node.NODE_ATTR:
+        ret += ' ';
+        ret += node.name;
+        ret += '="';
+        ret += this.compileNodes(node.childNodes);
+        ret += '"';
         break;
 
       default:
-        throw new Error('Compile error: unknown node type: '+node.type);
+        throw new Error('Unsupported node type in compiler: ' + node.type);
     }
-
-    return cache;
+    return ret;
   }
-
-  core.Compiler = Compiler;
-}(
-  window.structure,
-  window.structure.Node
-));
+};

@@ -1,58 +1,100 @@
-(function (core) {
+function CharStream(input) {
+  this.input = input ? input.replace(/(\r\n|\n|\r)/gm,'\n') : '';
+  this.size = this.input.length;
+  this.pointer = 0;
+  this.line = 1;
+  this.column = 1;
+}
 
-  var CharStream = function (str, options) {
-    this.initialize(str, options);
-  };
+// exports
+structure.CharStream = CharStream;
 
-  CharStream.prototype.line = null;
-  CharStream.prototype.column = null;
+CharStream.prototype = {
+  getPointer: function () {
+    return this.pointer;
+  },
 
-  CharStream.prototype.initialize = function (input, options) {
-    this.pointer = 0;
-    this.size = input.length;
-    this.input = input;
-    this.line = 1;
-    this.column = 1;
+  getSize: function () {
+    return this.size;
+  },
 
-    this.options = options || {};
-    this.options.sendEOF = (undefined === this.options.sendEOF); // Defaults to TRUE
-  };
+  getLine: function () {
+    return this.line;
+  },
 
-  CharStream.prototype.shift = function (num) {
-    this.pointer += num;
-  };
+  getColumn: function () {
+    return this.column;
+  },
 
-  CharStream.prototype.next = function (num) {
-    if (undefined === num) {
-      num = 1;
+  consume: function (len) {
+    var ret = '', chr, i = 0;
+
+    if (undefined === len) {
+      len = 1;
     }
 
-    return this.input.substr(this.pointer, num);
-  };
+    while (i < len) {
+      if (this.pointer < this.getSize()) {
+        chr = this.input.charAt(this.pointer);
+        if ('\n' === chr) {
+          this.line++;
+          this.column = 0;
+        }
+        ret += chr;
+        this.column++;
+        this.pointer++;
+      }
+      i++;
+    }
 
-  CharStream.prototype.consume = function (fn) {
-    var chr;
+    if (ret.length) {
+      return ret;
+    }
 
-    while (this.pointer < this.size) {
-      chr = this.input.charAt(this.pointer++);
+    return -1;
+  },
+
+  next: function (len) {
+    var ret = '',
+        index = 0;
+
+    if (undefined === len) {
+      len = 1;
+    }
+
+    while (index < len) {
+      if ((this.pointer + index) < this.getSize()) {
+        ret += this.input.charAt(this.pointer + index);
+      }
+      index++;
+    }
+
+    if (0 === ret.length) {
+      return -1;
+    }
+
+    return ret;
+  },
+
+  shift: function (len) {
+    var i = 0,
+        chr;
+
+    if (undefined === len) {
+      len = 1;
+    }
+
+    while (i < len) {
+      chr = this.next();
       
-      this.column++;
-
       if ('\n' === chr) {
         this.line++;
-        this.column = 1;
+        this.column = 0;
       }
 
-      // Let the callback process the input character by character
-      fn(chr);
+      this.column++;
+      this.pointer++;
+      i++;
     }
-
-    if (this.options.sendEOF) {
-      fn( -1 );
-    }
-  };
-
-  core.CharStream = CharStream;
-}(
-  window.structure
-));
+  }
+};

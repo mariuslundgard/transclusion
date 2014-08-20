@@ -47,7 +47,6 @@ module.exports = function(grunt) {
     jscs: {
       src: 'src/*.js',
       gruntfile: 'Gruntfile.js',
-      // tasks: 'build/tasks/*.js',
       options: {
         config: 'src/.jscs.json'
       }
@@ -102,9 +101,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jscs-checker');
 
   // Short list as a high frequency watch task
-  grunt.registerTask('dev', [ 'concat', /*'build',*/ 'jshint', 'jscs' ]);
+  grunt.registerTask('dev', [ 'concat', 'jshint', 'jscs' ]);
 
   // Default task(s)
-  grunt.registerTask('test', [/*'clean',*/ 'uglify' /*, 'browserify', 'nodeunit'*/]);
-  grunt.registerTask('default', [ 'dev', /*'requirejs',*/ 'uglify' /*'browserify', 'jshint', 'test'*/]);
+  grunt.registerTask('test', [ 'uglify' ]);
+  grunt.registerTask('default', [ 'dev', 'uglify' ]);
 };

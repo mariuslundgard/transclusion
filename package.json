@@ -1,7 +1,7 @@
 {
-  "name": "structure",
+  "name": "structure.js",
   "version": "0.1.0-alpha",
-  "description": "An HTML5 proprocessor for JavaScript",
+  "description": "An HTML5 superset and preprocessor for JavaScript",
   "keywords": [
     "js",
     "dom",
@@ -10,8 +10,6 @@
   ],
   "author": "Marius Lundgård <studio@mariuslundgard.com>",
   "repository": "mariuslundgard/structure.js",
-  "dependencies": {
-  },
   "devDependencies": {
     "mocha": "1",
     "should": "3",

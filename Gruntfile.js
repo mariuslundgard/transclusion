@@ -1,26 +1,33 @@
-// 'use strict';
-
 module.exports = function(grunt) {
-
-  function readOptionalJSON(filepath) {
-    var data = {};
-    try {
-      data = grunt.file.readJSON(filepath);
-    } catch (e) {}
-    return data;
-  }
-
-  // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    build: {
-      all: {
-        name: 'structure',
-        dest: 'dist/structure.js',
-        wrap: {
-          startFile: 'src/parts/start.frag',
-          endFile: 'src/parts/end.frag'
+    concat: {
+      dist: {
+        options: {
+          banner: '(function(exports){\n',
+          footer: '})(this);'
+        },
+        files: {
+          'dist/structure.js': [
+            'src/namespace.js',
+            'src/element-rules.js',
+            'src/element-directive.js',
+            'src/element-directive-set.js',
+            'src/node.js',
+            'src/nodes/element.js',
+            'src/nodes/attr.js',
+            'src/nodes/text.js',
+            'src/nodes/comment.js',
+            'src/char-stream.js',
+            'src/char-tester.js',
+            'src/document.js',
+            'src/token.js',
+            'src/tokenizer.js',
+            'src/tree-constructor.js',
+            'src/parser.js',
+            'src/compiler.js',
+          ],
         }
       }
     },
@@ -32,29 +39,15 @@ module.exports = function(grunt) {
       jscs: {
         src: [ 'src/.jscs.json' ]
       },
-    //   bower: {
-    //     src: [ 'bower.json' ]
-    //   }
-    },
-
-    requirejs: {
-      compile: {
-        options: {
-          baseUrl: 'src',
-          dir: 'dist',
-          optimize: 'none',
-          wrap: {
-            startFile: 'src/parts/start.frag',
-            endFile: 'src/parts/end.frag'
-          }
-        }
+      bower: {
+        src: [ 'bower.json' ]
       }
     },
 
     jscs: {
       src: 'src/*.js',
       gruntfile: 'Gruntfile.js',
-      tasks: 'build/tasks/*.js',
+      // tasks: 'build/tasks/*.js',
       options: {
         config: 'src/.jscs.json'
       }
@@ -68,11 +61,7 @@ module.exports = function(grunt) {
         options: {
           jshintrc: true
         }
-      },
-      // dist: {
-      //   src: 'dist/structure.js',
-      //   options: readOptionalJSON('src/.jshintrc')
-      // }
+      }
     },
 
     uglify: {
@@ -88,9 +77,9 @@ module.exports = function(grunt) {
         beautify: {
           ascii_only: true
         },
-        banner: '/*! Structure v<%= pkg.version %> | ' +
+        banner: '/*! Structure.js v<%= pkg.version %> | ' +
             '(c) <%= grunt.template.today("yyyy") %> Marius Lundgård | ' +
-            'http://mariuslundgard.com/structure.js/license */',
+            'http://mariuslundgard.com/projects/structure/license */',
         compress: {
           hoist_funs: false,
           loops: false,
@@ -110,21 +99,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-jscs-checker');
 
-  // grunt.loadNpmTasks('grunt-contrib-watch');
-  // grunt.loadNpmTasks('grunt-contrib-jshint');
-  // grunt.loadNpmTasks('grunt-contrib-requirejs');
-  // grunt.loadNpmTasks('grunt-contrib-uglify');
-
-  // Load tasks
-  grunt.loadTasks('build/tasks');
-
   // Short list as a high frequency watch task
-  grunt.registerTask('dev', [ 'build', 'jshint', 'jscs' ]);
+  grunt.registerTask('dev', [ 'concat', /*'build',*/ 'jshint', 'jscs' ]);
 
   // Default task(s)
-  grunt.registerTask('test', [/*'clean',*/ /*'uglify'*/ /*, 'browserify', 'nodeunit'*/]);
+  grunt.registerTask('test', [/*'clean',*/ 'uglify' /*, 'browserify', 'nodeunit'*/]);
   grunt.registerTask('default', [ 'dev', /*'requirejs',*/ 'uglify' /*'browserify', 'jshint', 'test'*/]);
 };

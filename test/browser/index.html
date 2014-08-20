@@ -1,0 +1,35 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Structure Tests</title>
+  <link rel="stylesheet" href="../../node_modules/mocha/mocha.css" />
+</head>
+<body>
+  <div id="mocha"></div>
+  <div id="messages"></div>
+  <div id="fixtures"></div>
+
+  <!-- Testing framework: -->
+  <script src="../../node_modules/mocha/mocha.js"></script>
+  <script src="../../node_modules/chai/chai.js"></script>
+
+  <!-- Structure src: -->
+  <script src="../../dist/structure.js"></script>
+
+  <!-- Setup mocha: -->
+  <script>mocha.setup('bdd')</script>
+
+  <!-- Structure tests: -->
+  <script src="../test.node.js"></script>
+  <script src="../test.char_stream.js"></script>
+  <script src="../test.document.js"></script>
+  <script src="../test.parser.js"></script>
+  <script src="../test.tokenizer.js"></script>
+  <script src="../test.compiler.js"></script>
+
+  <!-- Init mocha: -->
+  <script>
+    mocha.run();
+  </script>
+</body>
+</html>

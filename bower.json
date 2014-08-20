@@ -1,0 +1,27 @@
+{
+  "name": "structure.js",
+  "version": "0.1.0-alpha",
+  "author": "Marius Lundgård <studio@mariuslundgard.com>",
+  "main": [
+    "dist/structure.js",
+    "dist/structure.min.js",
+    "dist/structure.min.js.map"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "test",
+    "*.md",
+    "Gruntfile.js",
+    "package.json",
+    "node_modules",
+    "demo/*"
+  ],
+  "keywords": [
+    "html5",
+    "parser",
+    "superset",
+    "javascript",
+    "preprocessor"
+  ]
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html class="full-height">
+<head>
+<meta charset="utf-8">
+<title>Structure.js Demo</title>
+<link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/normalize.css">
+<link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/header.css">
+<link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/body.css">
+<link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/footer.css">
+<style>
+.message {
+  padding: 5px 15px;
+  margin-bottom: 1px;
+}
+.debug {
+  background: #9e9;
+}
+.notice {
+  background: #fe6;
+}
+.error {
+  background: #f66;
+}
+</style>
+<link rel="stylesheet" href="http://localhost/~mariuslundgard/body/dist/header.css">
+</head>
+<body class="form no-margin xs-max-size">
+
+<div class="full-height row rule-between">
+  <div class="column span-2">
+  	<div class="scrollable full-height monospace code" id="tree"></div>
+  </div>
+  <div class="column span-2">
+    <div class="scrollable full-height" id="messages"></div>
+  </div>
+  <div class="column span-2">
+    <textarea class="full-height monospace code text-field" id="src" style="position: absolute; width: 100%; background: #eee;">Type some markup here...</textarea>
+  </div>
+  <div class="column span-2">
+  	<textarea class="full-height monospace code text-field" style="position: absolute; width: 100%;" id="dest" disabled></textarea>
+  </div>
+  <div class="column span-2">
+  	<iframe class="full-height" id="visual" style="position: absolute; width: 100%; border: none;" src="frame.html"></iframe>
+  </div>
+</div>
+<script src="../dist/structure.js"></script>
+<script>
+var srcEl = document.getElementById('src');
+var destEl = document.getElementById('dest');
+var visFrameEl = document.getElementById('visual');
+var msgEl = document.getElementById('messages');
+var treeEl = document.getElementById('tree');
+var doc = new structure.Document();
+doc.debug = true;
+
+srcEl.oninput = function (e) {
+  update();
+}
+
+update();
+
+function reset () {
+  msgEl.innerHTML = '';
+  destEl.value = '';
+  visFrameEl.src = 'data:text/html;charset=utf-8,' + '';
+}
+
+function update() {
+  var input = srcEl.value;
+  
+  if (0 == input.length) {
+    reset();
+    return;
+  }
+  
+  try {
+    var html = doc.compile(input);
+  } catch (err) {
+    reset();
+    console.warn(err.stack);
+    displayMessages([{ type: 'error', message: err.message + ' (see console for backtrace)'}]);
+    return;
+  }
+  
+  destEl.value = html;
+  
+  iframeWin = visFrameEl.contentWindow || visFrameEl;
+
+  if (iframeWin.update) {
+    iframeWin.update({
+      bodyHTML: doc.getCompiler().compileNodes(doc.body.childNodes)
+    });
+  }
+
+  displayMessages(doc.parser.messages);
+  displayTree(doc);
+}
+
+function displayMessages(msg) {
+  var i, len;
+  msgEl.innerHTML = '';
+  for (i = 0, len = msg.length; i < len; i++) {
+    msgEl.innerHTML += '<div class="code monospace message ' + msg[i].type + '">' + enc(msg[i].message) + '</div>';
+  }
+}
+
+function displayTree(doc) {
+  treeEl.innerHTML = '<pre class="monospace">' + JSON.stringify(doc.dump(), undefined, 1) + '</pre>';
+}
+
+function enc(str) {
+  return str.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+    return '&#'+i.charCodeAt(0)+';';
+  });
+}
+</script>
+</body>
+</html>

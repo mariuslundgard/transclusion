@@ -1411,31 +1411,21 @@ Text.prototype.dump = function () {
   return ret;
 };
 
-// (function (exports) {
-  // var struct = structure;
+function Comment(data) {
+  structure.Node.call(this, structure.Node.NODE_COMMENT, '#comment');
+  this.data = data || '';
+}
 
-  if (! structure.Node) {
-    throw new Error('The structure.nodes.Comment class depends on the structure.Node class');
-  }
+Comment.prototype = Object.create(structure.Node.prototype);
+Comment.prototype.constructor = Comment;
 
-  structure.nodes || (structure.nodes = {});
+structure.nodes.Comment = Comment;
 
-  function Comment(data) {
-    structure.Node.call(this, structure.Node.NODE_COMMENT, '#comment');
-    this.data = data || '';
-  }
-
-  Comment.prototype = Object.create(structure.Node.prototype);
-  Comment.prototype.constructor = Comment;
-
-  structure.nodes.Comment = Comment;
-
-  Comment.prototype.dump = function () {
-    var ret = structure.Node.prototype.dump.call(this);
-    ret.data = this.data;
-    return ret;
-  };
-// })(this);
+Comment.prototype.dump = function () {
+  var ret = structure.Node.prototype.dump.call(this);
+  ret.data = this.data;
+  return ret;
+};
 
 function CharStream(input) {
   this.input = input ? input.replace(/(\r\n|\n|\r)/gm,'\n') : '';

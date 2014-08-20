@@ -6,7 +6,6 @@
 </head>
 <body>
   <div id="mocha"></div>
-  <!-- <div id="mocha"><p><a href=".">Index</a></p></div> -->
   <div id="messages"></div>
   <div id="fixtures"></div>
 
@@ -15,17 +14,7 @@
   <script src="../../node_modules/chai/chai.js"></script>
 
   <!-- Structure src: -->
-  <script src="../../new_src/node.js"></script>
-  <script src="../../new_src/nodes/element.js"></script>
-  <script src="../../new_src/nodes/text.js"></script>
-  <script src="../../new_src/char-stream.js"></script>
-  <script src="../../new_src/char-tester.js"></script>
-  <script src="../../new_src/document.js"></script>
-  <script src="../../new_src/token.js"></script>
-  <script src="../../new_src/tokenizer.js"></script>
-  <script src="../../new_src/tree-constructor.js"></script>
-  <script src="../../new_src/parser.js"></script>
-  <script src="../../new_src/compiler.js"></script>
+  <script src="../../dist/structure.js"></script>
 
   <!-- Setup mocha: -->
   <script>mocha.setup('bdd')</script>
@@ -40,8 +29,6 @@
 
   <!-- Init mocha: -->
   <script>
-    // mocha.checkLeaks();
-    // mocha.globals(['jQuery']);
     mocha.run();
   </script>
 </body>

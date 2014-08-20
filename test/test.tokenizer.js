@@ -1,8 +1,6 @@
 var expect = chai.expect,
     src = structure;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 describe('Tokenizer', function() {
   describe('constructor', function() {
     it('should set tokenizer\'s parser', function() {
@@ -21,8 +19,6 @@ describe('Tokenizer', function() {
 
       tok.tokenize('test');
       expect(tok.state).to.equal(src.Tokenizer.STATE_EOF);
-
-      console.log(doc);
     });
   });
 });

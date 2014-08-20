@@ -1,23 +1,21 @@
-(function (exports) {
-  if (! exports.structure.Node) {
-    throw new Error('The structure.nodes.Text class depends on the structure.Node class');
-  }
+function Text(data) {
+  structure.Node.call(this, structure.Node.NODE_TEXT, '#text');
+  this.data = data || '';
+  this.whiteSpace = true;
+}
 
-  var struct = exports.structure;
-  struct.nodes || (struct.nodes = {});
+Text.prototype = Object.create(structure.Node.prototype);
+Text.prototype.constructor = Text;
 
-  function Text(data) {
-    struct.Node.call(this, struct.Node.NODE_TEXT, '#text');
-    this.data = data || '';
-    this.whiteSpace = true;
-  }
+// exports
+structure.nodes.Text = Text;
 
-  Text.prototype = Object.create(struct.Node.prototype);
-  Text.prototype.constructor = Text;
+Text.prototype.appendData = function (data) {
+  this.data += data;
+};
 
-  struct.nodes.Text = Text;
-
-  Text.prototype.appendData = function (data) {
-    this.data += data;
-  };
-})(this);
+Text.prototype.dump = function () {
+  var ret = structure.Node.prototype.dump.call(this);
+  ret.data = this.data;
+  return ret;
+};

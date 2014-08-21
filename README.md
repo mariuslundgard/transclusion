@@ -91,6 +91,7 @@ var doc = new structure.Document(),
 
 // add a custom directive called `transclude`
 doc.addDirective('transclude', {
+  allowedParentElements: [ 'body', '#flow' ],
   compile: function (node, compiler) {
     var src = node.getAttribute('src'),
         select = node.getAttribute('select');
@@ -103,4 +104,25 @@ doc.addDirective('transclude', {
     return compiler.compileNodes(node.childNodes);
   }
 });
+```
+
+The markup now supports ```<transclude>``` elements:
+
+```
+<transclude src="/profile-assets" select="#logo">
+  <p>This is the fallback content.</p>
+</transclude>
+```
+
+And the way to compile this in JavaScript:
+
+```js
+// continues from the examples above ...
+
+doc.setInput(
+  '<transclude src="/profile-assets" select="#logo">\n' +
+  '  <p>This is the fallback content</p>\n' +
+  '</transclude>');
+
+var html = doc.compile();
 ```

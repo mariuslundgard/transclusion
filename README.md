@@ -79,3 +79,27 @@ The example above will yield:
 <body></body>
 </html>
 ```
+
+## Directives
+
+Similary to AngularJS' concept of directives, Structure can be extended to manage custom elements:
+
+```js
+var doc = new structure.Document(),
+    api = require('api'); // some client or server side api for retrieving stored documents
+
+// add a custom directive called `transclude`
+doc.addDirective('transclude', {
+  compile: function (node, compiler) {
+    var src = node.getAttribute('src'),
+        select = node.getAttribute('select');
+    if (src && src = api.getDocument(src)) {
+      if (! select) {
+        return compiler.compileNodes(src.bodyElement.childNodes);
+      }
+      return compiler.compileNodes(src.querySelectorAll(select));
+    }
+    return compiler.compileNodes(node.childNodes);
+  }
+});
+```

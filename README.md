@@ -86,7 +86,8 @@ Similary to AngularJS' concept of directives, Structure can be extended to manag
 
 ```js
 var doc = new structure.Document(),
-    api = require('api'); // some client or server side api for retrieving stored documents
+    api = require('api'); // `api`: some client or server side api for 
+                          // retrieving stored documents
 
 // add a custom directive called `transclude`
 doc.addDirective('transclude', {

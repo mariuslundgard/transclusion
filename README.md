@@ -18,7 +18,7 @@ Structure is concept for a HTML5 preprocessor (currently implemented in alpha-st
 
 For instance, Structure generates valid HTML5 out of minimal markup:
 
-```html
+```
 <title>Welcome to my page</title>
 <h1>Hello, world!
 ```
@@ -39,7 +39,7 @@ Which yields:
 
 More interestingly, Structure enables HTML5 to do things such as printing variables and looping:
 
-```html
+```
 <div each=(keyword in document.keywords)>
   <p>[[ keyword ]]</p>
 </div>
@@ -47,7 +47,7 @@ More interestingly, Structure enables HTML5 to do things such as printing variab
 
 ... as well as marking up data structures:
 
-```html
+```
 <html
   keywords=[
     'structure',

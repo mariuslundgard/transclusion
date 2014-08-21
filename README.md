@@ -14,7 +14,7 @@ Try the demo or check out ```mariuslundgard/folio``` for advanced usage.
 
 ## Introduction
 
-Structure is a concept for a HTML5 preprocessor (currently implemented in alpha-stage for both PHP and Javascript) based on the DOM. It's an alternative to, and more importantly an extension of, plain vanilla HTML5.
+Structure is a concept for a HTML5 preprocessor (currently implemented in alpha-stage for both PHP and Javascript). It’s an alternative to – and more importantly an extension of – plain vanilla HTML5.
 
 For instance, Structure generates valid HTML5 out of minimal markup:
 
@@ -45,7 +45,7 @@ More interestingly, Structure enables HTML5 to do things such as printing variab
 </div>
 ```
 
-... as well as marking up data structures:
+… as well as marking up data structures:
 
 ```
 <html
@@ -82,7 +82,7 @@ The example above will yield:
 
 ## Directives
 
-Similary to AngularJS' concept of directives, Structure can be extended to manage custom elements:
+Similar to AngularJS’ concept of directives, Structure can be extended to manage custom elements:
 
 ```js
 var doc = new structure.Document(),

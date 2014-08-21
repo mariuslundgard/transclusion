@@ -14,7 +14,7 @@ Try the demo or check out ```mariuslundgard/folio``` for advanced usage.
 
 ## Introduction
 
-Structure is concept for a HTML5 preprocessor (currently implemented in alpha-stage for both PHP and Javascript) based on the DOM. It's an alternative to, and more importantly an extension of, plain vanilla HTML5.
+Structure is a concept for a HTML5 preprocessor (currently implemented in alpha-stage for both PHP and Javascript) based on the DOM. It's an alternative to, and more importantly an extension of, plain vanilla HTML5.
 
 For instance, Structure generates valid HTML5 out of minimal markup:
 

@@ -59,7 +59,10 @@ More interestingly, Structure enables HTML5 to do things such as printing variab
     'normalize.css',
     'core.css'
   ]>
-<link rel="stylesheet" each=(style-sheet in document.style-sheets) href="[[ style-sheet ]]">
+<link
+  each=(style-sheet in document.style-sheets)
+  rel="stylesheet"
+  href="[[ style-sheet ]]">
 ```
 
 The example above will yield:

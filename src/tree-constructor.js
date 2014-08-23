@@ -696,13 +696,13 @@ mode[TreeConstructor.MODE_IN_TEXT] = function (scope, tok) {
       break;
 
     case Token.END_TAG === tok.type:
-      if ('script' === tok.name) {
-        // TODO
-        throw new Error('NOT IMPLEMENTED');
-      } else {
+      // if ('script' === tok.name) {
+      //   // TODO
+      //   throw new Error('NOT IMPLEMENTED');
+      // } else {
         scope.popNode();
         scope.popMode();
-      }
+      // }
       break;
   }
 };

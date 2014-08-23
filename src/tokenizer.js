@@ -71,8 +71,9 @@ Tokenizer.prototype = {
       state[this.state](this, stream);
 
       innings++;
-
-      if (3000 < innings) {
+ 
+      // TODO: remove this in BETA
+      if (this.parser.document.debug && 3000 < innings) {
         throw new Error('Tokenizer running wild?');
       }
 

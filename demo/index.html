@@ -42,7 +42,25 @@
   	<iframe class="full-height" id="visual" style="position: absolute; width: 100%; border: none;" src="frame.html"></iframe>
   </div>
 </div>
-<script src="../dist/structure.js"></script>
+<script>
+var structure = {};
+</script>
+<script src="../src/element-rules.js"></script>
+<script src="../src/element-directive.js"></script>
+<script src="../src/element-directive-set.js"></script>
+<script src="../src/node.js"></script>
+<script src="../src/nodes/element.js"></script>
+<script src="../src/nodes/attr.js"></script>
+<script src="../src/nodes/text.js"></script>
+<script src="../src/nodes/comment.js"></script>
+<script src="../src/char-stream.js"></script>
+<script src="../src/char-tester.js"></script>
+<script src="../src/document.js"></script>
+<script src="../src/token.js"></script>
+<script src="../src/tokenizer.js"></script>
+<script src="../src/tree-constructor.js"></script>
+<script src="../src/parser.js"></script>
+<script src="../src/compiler.js"></script>
 <script>
 var srcEl = document.getElementById('src');
 var destEl = document.getElementById('dest');

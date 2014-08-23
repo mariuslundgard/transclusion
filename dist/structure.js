@@ -1767,8 +1767,9 @@ Tokenizer.prototype = {
       state[this.state](this, stream);
 
       innings++;
-
-      if (3000 < innings) {
+ 
+      // TODO: remove this in BETA
+      if (this.parser.document.debug && 3000 < innings) {
         throw new Error('Tokenizer running wild?');
       }
 
@@ -3419,13 +3420,13 @@ mode[TreeConstructor.MODE_IN_TEXT] = function (scope, tok) {
       break;
 
     case Token.END_TAG === tok.type:
-      if ('script' === tok.name) {
-        // TODO
-        throw new Error('NOT IMPLEMENTED');
-      } else {
+      // if ('script' === tok.name) {
+      //   // TODO
+      //   throw new Error('NOT IMPLEMENTED');
+      // } else {
         scope.popNode();
         scope.popMode();
-      }
+      // }
       break;
   }
 };

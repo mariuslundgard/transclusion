@@ -19,6 +19,12 @@ module.exports = function(grunt) {
             'src/nodes/attr.js',
             'src/nodes/text.js',
             'src/nodes/comment.js',
+            'src/nodes/array.js',
+            'src/nodes/expr.js',
+            'src/nodes/var.js',
+            'src/nodes/operator.js',
+            'src/nodes/string.js',
+            'src/nodes/num.js',
             'src/char-stream.js',
             'src/char-tester.js',
             'src/document.js',
@@ -26,8 +32,8 @@ module.exports = function(grunt) {
             'src/tokenizer.js',
             'src/tree-constructor.js',
             'src/parser.js',
-            'src/compiler.js',
-          ],
+            'src/compiler.js'
+          ]
         }
       }
     },

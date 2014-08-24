@@ -46,11 +46,23 @@ structure.elementRules = {
     allowedChildElements: {
       'head': [],
       'body': []
+    },
+    allowedMetaAttrs: {
+      'scripts': [],
+      'style-sheets': [],
+      'description': [],
+      'keywords': [],
+      'author': [],
+      'charset': [],
+      'application-name': [],
+      'generator': []
     }
   },
   head: {
     allowedAttrs: {
       'profile': []
+    },
+    allowedMetaAttrs: {
     },
     allowedChildElements: {
       'title': [],
@@ -106,6 +118,8 @@ structure.elementRules = {
   body: {
     allowedAttrs: {
       'onafterprint': [],
+    },
+    allowedMetaAttrs: {
     },
     allowedChildElements: {
       'script': {
@@ -187,7 +201,11 @@ structure.elementRules = {
       },
       'p': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'hr': {
@@ -195,20 +213,28 @@ structure.elementRules = {
           'color': []
         }
       },
-      'pre': [],
+      'pre': {
+        allowedChildElements: {
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
+        }
+      },
       'blockquote': {
         allowedAttrs: {
           'cite': []
         }
       },
       'ol': {
-        allowedChildElements: {
-          'li': []
-        },
         allowedAttrs: {
           'reversed': [],
           'start': [],
           'type': []
+        },
+        allowedChildElements: {
+          'li': []
         }
       },
       'ul': {
@@ -220,6 +246,9 @@ structure.elementRules = {
         allowedAttrs: {
           'value': []
         },
+        allowedChildElements: {
+          '#flow' : []
+        }
       },
       'dl': {
         allowedChildElements: {
@@ -313,6 +342,9 @@ structure.elementRules = {
       'br': {
         allowedAttrs: {
           'clear': []
+        },
+        allowedChildElements: {
+          '#phrasing': []
         }
       },
       'wbr': [],
@@ -662,6 +694,9 @@ structure.elementRules = {
           'name': [],
           'type': [],
           'value': []
+        },
+        allowedChildElements: {
+          '#phrasing': []
         }
       },
       'select': {
@@ -1023,32 +1058,45 @@ ElementDirective.prototype = {
     return undefined !== this.rules.allowedAttrs[name];
   },
 
+  mayContainMetaAttribute: function (name) {
+    this.loadRules();
+    return undefined !== this.rules.allowedMetaAttrs[name];
+  },
+
   isVoidElement: function () {
     this.loadRules();
     return -1 < structure.elementRules.voidElements.indexOf(this.name);
   },
 
   loadRules: function () {
-    var elRules, allowedAttrs, allowedChildElements, expandedChildElements;
+    var elRules,
+        allowedAttrs,
+        allowedMetaAttrs,
+        allowedChildElements,
+        expandedChildElements;
 
     if (! this.isLoaded) {
       allowedAttrs = {};
+      allowedMetaAttrs = {};
       allowedChildElements = {};
       expandedChildElements = {};
 
       switch (this.name) {
         case 'html':
           allowedAttrs = structure.elementRules.html.allowedAttrs;
+          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
           allowedChildElements = structure.elementRules.html.allowedChildElements;
           break;
 
         case 'head':
           allowedAttrs = structure.elementRules.head.allowedAttrs;
+          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
           allowedChildElements = structure.elementRules.head.allowedChildElements;
           break;
 
         case 'body':
           allowedAttrs = structure.elementRules.body.allowedAttrs;
+          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
           allowedChildElements = structure.elementRules.body.allowedChildElements;
           break;
 
@@ -1070,10 +1118,20 @@ ElementDirective.prototype = {
 
       this.extendAllowedAttrs(structure.elementRules.globalAttrs);
       this.extendAllowedAttrs(allowedAttrs);
+      this.extendAllowedMetaAttrs(allowedMetaAttrs);
       this.extendAllowedChildElements(allowedChildElements);
       this.extendAllowedChildElements(expandedChildElements);
 
       this.isLoaded = true;
+    }
+  },
+
+  extendAllowedMetaAttrs: function (rules) {
+    if (! this.rules.allowedMetaAttrs) {
+      this.rules.allowedMetaAttrs = {};
+    }
+    for (var i in rules) {
+      this.rules.allowedMetaAttrs[i] = rules[i];
     }
   },
 
@@ -1147,6 +1205,20 @@ ElementDirectiveSet.prototype = {
     return false;
   },
 
+  mayContainMetaAttribute: function (name) {
+    var i, len;
+
+    this.loadDirectives();
+
+    for (i = 0, len = this.set.length; i < len; i++) {
+      if (this.set[i].mayContainMetaAttribute(name)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
   isVoidElement: function () {
     var i, len;
 
@@ -1183,6 +1255,7 @@ function Node(type, name) {
   this.lastChild = null;
   this.childNodes = [];
   this.attrs = [];
+  this.metaAttrs = [];
   this.index = 0;
 
   // pointers
@@ -1215,6 +1288,12 @@ Node.NODE_TEXT = 3;
 Node.NODE_ATTR = 4;
 Node.NODE_EXPR = 5;
 Node.NODE_COMMENT = 6;
+Node.NODE_ARRAY = 7;
+Node.NODE_STRING = 8;
+Node.NODE_EXPR = 9;
+Node.NODE_VAR = 10;
+Node.NODE_OPERATOR = 11;
+Node.NODE_NUMBER = 12;
 
 Node.prototype = {
   setDocument: function (doc) {
@@ -1248,6 +1327,13 @@ Node.prototype = {
     node.parentNode = this;
     node.index = this.attrs.length;
     this.attrs.push(node);
+    return node;
+  },
+
+  appendMetaAttr: function (node) {
+    node.parentNode = this;
+    node.index = this.metaAttrs.length;
+    this.metaAttrs.push(node);
     return node;
   },
 
@@ -1328,6 +1414,10 @@ Element.prototype.mayContainAttribute = function (name) {
   return this.getDirectiveSet().mayContainAttribute(name);
 };
 
+Element.prototype.mayContainMetaAttribute = function (name) {
+  return this.getDirectiveSet().mayContainMetaAttribute(name);
+};
+
 Element.prototype.isVoidElement = function () {
   return this.getDirectiveSet().isVoidElement();
 };
@@ -1340,7 +1430,22 @@ Element.prototype.getDirectiveSet = function () {
 };
 
 Element.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var i, len, ret = structure.Node.prototype.dump.call(this);
+
+  if (this.attrs.length) {
+    ret.attrs = {};
+    for (i = 0, len = this.attrs.length; i < len; i++) {
+      ret.attrs[this.attrs[i].name] = this.attrs[i].dump();
+    }
+  }
+
+  if (this.metaAttrs.length) {
+    ret.metaAttrs = {};
+    for (i = 0, len = this.metaAttrs.length; i < len; i++) {
+      ret.metaAttrs[this.metaAttrs[i].name] = this.metaAttrs[i].dump();
+    }
+  }
+
   ret.outerStartOffset = this.outerStartOffset;
   ret.innerStartOffset = this.innerStartOffset;
   ret.innerEndOffset = this.innerEndOffset;
@@ -1427,8 +1532,89 @@ Comment.prototype.dump = function () {
   return ret;
 };
 
+function Arr() {
+  structure.Node.call(this, structure.Node.NODE_ARRAY, '#array');
+}
+
+Arr.prototype = Object.create(structure.Node.prototype);
+Arr.prototype.constructor = Arr;
+
+// exports
+structure.nodes.Arr = Arr;
+
+Arr.prototype.dump = function () {
+  // return this.childNodes;
+  var ret = structure.Node.prototype.dump.call(this);
+  return ret;
+};
+
+function Expr() {
+  structure.Node.call(this, structure.Node.NODE_EXPR, '#expr');
+}
+
+Expr.prototype = Object.create(structure.Node.prototype);
+Expr.prototype.constructor = Expr;
+
+// exports
+structure.nodes.Expr = Expr;
+
+function Var(name) {
+  structure.Node.call(this, structure.Node.NODE_VAR, name);
+}
+
+Var.prototype = Object.create(structure.Node.prototype);
+Var.prototype.constructor = Var;
+
+// exports
+structure.nodes.Var = Var;
+
+function Operator(sign) {
+  structure.Node.call(this, structure.Node.NODE_OPERATOR, '#operator');
+  this.sign = sign;
+}
+
+Operator.prototype = Object.create(structure.Node.prototype);
+Operator.prototype.constructor = Operator;
+
+// exports
+structure.nodes.Operator = Operator;
+
+Operator.prototype.dump = function () {
+  var ret = structure.Node.prototype.dump.call(this);
+  ret.sign = this.sign;
+  return ret;
+};
+
+function Str(data) {
+  structure.Node.call(this, structure.Node.NODE_STRING, '#string');
+  this.data = data;
+}
+
+Str.prototype = Object.create(structure.Node.prototype);
+Str.prototype.constructor = Str;
+
+// exports
+structure.nodes.Str = Str;
+
+Str.prototype.dump = function () {
+  var ret = structure.Node.prototype.dump.call(this);
+  ret.data = this.data;
+  return ret;
+};
+
+function Num(value) {
+  structure.Node.call(this, structure.Node.NODE_NUMBER, '#number');
+  this.value = value;
+}
+
+Num.prototype = Object.create(structure.Node.prototype);
+Num.prototype.constructor = Num;
+
+// exports
+structure.nodes.Num = Num;
+
 function CharStream(input) {
-  this.input = input ? input.replace(/(\r\n|\n|\r)/gm,'\n') : '';
+  this.input = input ? input.replace(/(\r\n|\n|\r)/gm, '\n') : '';
   this.size = this.input.length;
   this.pointer = 0;
   this.line = 1;
@@ -1572,6 +1758,9 @@ Document.prototype.reset = function () {
   if (this.parser) {
     this.parser.reset();
   }
+  this.context = {
+    test: 'Hello, world!'
+  };
   this.childNodes = [];
   this.attrs = [];
   this.firstChild = null;
@@ -1632,6 +1821,42 @@ Document.prototype.createAttr = function (name) {
   return node;
 };
 
+Document.prototype.createArray = function (name) {
+  var node = new structure.nodes.Arr(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createString = function (data) {
+  var node = new structure.nodes.Str(data);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createExpr = function () {
+  var node = new structure.nodes.Expr();
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createVar = function (name) {
+  var node = new structure.nodes.Var(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createNumber = function (name) {
+  var node = new structure.nodes.Num(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createOperator = function (sign) {
+  var node = new structure.nodes.Operator(sign);
+  node.setDocument(this);
+  return node;
+};
+
 Document.prototype.getParser = function () {
   if (null === this.parser) {
     this.parser = new structure.Parser(this);
@@ -1677,14 +1902,14 @@ structure.Token = {
   ATTR_KEY: 'ATTR_KEY',
   START_ATTR_VALUE: 'START_ATTR_VALUE',
   END_ATTR_VALUE: 'END_ATTR_VALUE',
-  EXPR_OPEN: 'EXPR_OPEN',
-  VARIABLE: 'VARIABLE',
+  START_EXPR: 'START_EXPR',
+  VAR: 'VAR',
   FUNC: 'FUNC',
   END_FUNC: 'END_FUNC',
   DOT: 'DOT',
   STR: 'STR',
   NUM: 'NUM',
-  EXPR_CLOSE: 'EXPR_CLOSE',
+  END_EXPR: 'END_EXPR',
   OPERATOR: 'OPERATOR',
   META: 'META',
   END_META: 'END_META',
@@ -1701,7 +1926,7 @@ function Tokenizer(prs) {
   this.parser = prs;
   this.reset();
   this.openExprDelim = '[[';
-  this.closeExprDelim = '[[';
+  this.closeExprDelim = ']]';
   this.replacementChar = '?';
 }
 
@@ -1735,7 +1960,27 @@ Tokenizer.STATE_BEFORE_ATTR_VALUE       = 'STATE_BEFORE_ATTR_VALUE';
 Tokenizer.STATE_ATTR_VALUE              = 'STATE_ATTR_VALUE';
 Tokenizer.STATE_AFTER_ATTR_VALUE        = 'STATE_AFTER_ATTR_VALUE';
 
-var state = {},
+Tokenizer.STATE_BEFORE_ARRAY_VALUE = 'STATE_BEFORE_ARRAY_VALUE';
+Tokenizer.STATE_BEFORE_OBJECT_KEY  = 'STATE_BEFORE_OBJECT_KEY';
+Tokenizer.STATE_ARRAY_STRING_ESCAPED_VALUE = 'STATE_ARRAY_STRING_ESCAPED_VALUE';
+Tokenizer.STATE_AFTER_ARRAY_VALUE = 'STATE_AFTER_ARRAY_VALUE';
+
+Tokenizer.STATE_DYNAMIC_STRING_VALUE = 'STATE_DYNAMIC_STRING_VALUE';
+Tokenizer.STATE_DYNAMIC_NUMBER_VALUE = 'STATE_DYNAMIC_NUMBER_VALUE';
+Tokenizer.STATE_DYNAMIC_NUMBER_VALUE_AFTER_DECIMAL = 'STATE_DYNAMIC_NUMBER_VALUE_AFTER_DECIMAL';
+
+Tokenizer.STATE_EXPR = 'STATE_EXPR';
+Tokenizer.STATE_EXPR_VAR = 'STATE_EXPR_VAR';
+Tokenizer.STATE_EXPR_AFTER_VALUE = 'STATE_EXPR_AFTER_VALUE';
+Tokenizer.STATE_EXPR_AFTER_OPERATOR = 'STATE_EXPR_AFTER_OPERATOR';
+
+var exprStates = [
+      Tokenizer.STATE_EXPR,
+      Tokenizer.STATE_EXPR_VAR,
+      Tokenizer.STATE_EXPR_AFTER_VALUE,
+      Tokenizer.STATE_EXPR_AFTER_OPERATOR
+    ],
+    state = {},
     Token = structure.Token,
     CharTester = structure.CharTester;
 
@@ -1744,6 +1989,9 @@ var state = {},
 
 Tokenizer.prototype = {
   reset: function () {
+    this.queueTokens = false;
+    this.tokQueue = [];
+    this.stateStack = [];
     this.state = Tokenizer.STATE_DATA;
     this.tok = null;
     this.buffer = '';
@@ -1797,7 +2045,41 @@ Tokenizer.prototype = {
       this.prevStartTagToken = tok;
     }
 
-    this.parser.handleToken(tok);
+    if (this.queueTokens) {
+      this.tokQueue.push(tok);
+    } else {
+      this.parser.handleToken(tok);
+    }
+  },
+
+  releaseTokenQueue: function () {
+    var i, len;
+    this.queueTokens = false;
+    for (i = 0, len = this.tokQueue.length; i < len; i++) {
+      this.emit(this.tokQueue[i]);
+    }
+    this.tokQueue = [];
+  },
+
+  exitExpr: function () {
+    
+    this.buffer = '';
+    this.tokQueue = [];
+    
+    this.queueTokens = false;
+
+    while (-1 < exprStates.indexOf(this.state)) {
+      this.popState();
+    }
+
+    // this.releaseTokenQueue();
+
+    this.tok = null;
+    this.emit({
+      type: Token.CHAR,
+      data: this.buffer
+    });
+
   },
 
   currentEndTagIsAppropriate: function () {
@@ -1812,6 +2094,18 @@ Tokenizer.prototype = {
       throw new Error('Cannot set undefined state');
     }
     this.state = state;
+  },
+
+  pushState: function (state) {
+    this.stateStack.push(this.state);
+    this.state = state;
+  },
+
+  popState: function () {
+    if (! this.stateStack.length) {
+      throw new Error('The state stack cannot be popped because it\'s already empty');
+    }
+    this.state = this.stateStack.pop();
   }
 };
 
@@ -1839,10 +2133,14 @@ state[Tokenizer.STATE_DATA] = function (tok, stream) {
       break;
 
     case tok.openExprDelim === chr + stream.next(tok.openExprDelim.length - 1):
-      tok.parser.report(
-        'exception',
-        'Not implemented (STATE_DATA)'
-      );
+      tok.queueTokens = true;
+      tok.emit({
+        type: Token.START_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      stream.shift(tok.openExprDelim.length - 1);
+      tok.buffer = tok.openExprDelim;
+      tok.pushState(Tokenizer.STATE_EXPR);
       break;
 
     case '\0' === chr:
@@ -1870,7 +2168,6 @@ state[Tokenizer.STATE_DATA] = function (tok, stream) {
 
 state[Tokenizer.STATE_MARKUP_DECLARATION_OPEN] = function (tok, stream) {
   // var chr = stream.consume();
-  
 
   switch (true) {
     case '--' === stream.next(2):
@@ -2126,7 +2423,7 @@ state[Tokenizer.STATE_BOGUS_COMMENT] = function (tok, stream) {
     type: Token.COMMENT,
     data: buf
   });
-  tok.state = Tokenizer.STATE_DATA;
+  tok.setState(Tokenizer.STATE_DATA);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2250,7 +2547,10 @@ state[Tokenizer.STATE_TAG_NAME] = function (tok, stream) {
 
     case -1 === chr:
       tok.parser.report('notice', 'Unexpected EOF in tag name');
-      tmp = tok.tok.name;
+      tmp = '';
+      if (tok.tok) {
+        tmp = tok.tok.name;
+      }
       tok.tok = null;
       tok.emit({
         type: Token.CHAR,
@@ -2550,6 +2850,16 @@ state[Tokenizer.STATE_BEFORE_ATTR_KEY] = function (tok, stream) {
       tok.setState(Tokenizer.STATE_ATTR_KEY);
       break;
 
+    case '>' === chr:
+      // tok.emit();
+      tok.setState(Tokenizer.STATE_DATA);
+      tok.emit({
+        type: Token.START_TAG_CLOSE,
+        selfClosing: false,
+        offset: stream.pointer,
+      });
+      break;
+
     case -1 === chr:
       tok.parser.report(
         'error',
@@ -2623,7 +2933,7 @@ state[Tokenizer.STATE_BEFORE_ATTR_VALUE] = function (tok, stream) {
         type: Token.START_ARR
       });
       tok.setState(Tokenizer.STATE_AFTER_ATTR_VALUE);
-      tok.pushState(Tokenizer.BEFORE_JSON_ARRAY_VALUE);
+      tok.pushState(Tokenizer.STATE_BEFORE_ARRAY_VALUE);
       break;
 
     case '{' === chr:
@@ -2631,7 +2941,7 @@ state[Tokenizer.STATE_BEFORE_ATTR_VALUE] = function (tok, stream) {
         type: Token.START_OBJ
       });
       tok.setState(Tokenizer.STATE_AFTER_ATTR_VALUE);
-      tok.pushState(Tokenizer.BEFORE_JSON_OBJECT_KEY);
+      tok.pushState(Tokenizer.STATE_BEFORE_OBJECT_KEY);
       break;
 
     case '"' === chr:
@@ -2647,6 +2957,85 @@ state[Tokenizer.STATE_BEFORE_ATTR_VALUE] = function (tok, stream) {
       tok.parser.report(
         'exception',
         'Unexpected character before attribute value: ' + chr
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Before array value state:
+
+state[Tokenizer.STATE_BEFORE_ARRAY_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case ']' === chr:
+      tok.emit({
+        type: Token.END_ARR
+      });
+      tok.popState();
+      break;
+
+    case '\'' === chr:
+    case '"' === chr:
+      tok.tok = {
+        type: Token.STR,
+        data: ''
+      };
+      tok.attrDelimiter = chr;
+      tok.setState(Tokenizer.STATE_AFTER_ARRAY_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+
+    default:
+      tok.parser.report(
+        'exception',
+        'Unexpected character: ' + chr + ' (STATE_BEFORE_ARRAY_VALUE)'
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Array string value (escaped) state:
+
+state[Tokenizer.STATE_ARRAY_STRING_ESCAPED_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  // console.log(chr);
+  switch (true) {
+
+    case -1 === chr:
+      tok.parser.report(
+        'exception',
+        'Unexpected EOF (STATE_ARRAY_STRING_ESCAPED_VALUE)'
+      );
+      break;
+
+    default:
+      tok.tok.data += chr;
+      tok.setState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// After array value state:
+
+state[Tokenizer.STATE_AFTER_ARRAY_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case ']' === chr:
+      tok.emit({
+        type: Token.END_ARR
+      });
+      tok.popState();
+      break;
+
+    default:
+      tok.parser.report(
+        'exception',
+        'Unexpected character: ' + chr + ' (STATE_AFTER_ARRAY_VALUE)'
       );
       break;
   }
@@ -2722,6 +3111,274 @@ state[Tokenizer.STATE_AFTER_ATTR_VALUE] = function (tok, stream) {
   }
 };
 
+//////////////////////////////////////////////////////////////////////////////
+// Expression state:
+
+state[Tokenizer.STATE_EXPR] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      break;
+
+    case CharTester.isAlpha(chr):
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.VAR,
+        name: chr
+      };
+      tok.setState(Tokenizer.STATE_EXPR_VAR);
+      break;
+
+    case '\'' === chr:
+    case '"' === chr:
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.STR,
+        data: ''
+      };
+      tok.attrDelimiter = chr;
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.NUM,
+        value: chr
+      };
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_NUMBER_VALUE);
+      break;
+
+    case '(' === chr:
+      tok.buffer += chr;
+      // inception
+      tok.emit({
+        type: Token.START_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_EXPR);
+      break;
+
+    default:
+      tok.buffer += chr;
+      tok.parser.report(
+        'error',
+        'Unexpected character: ' + chr + ' (STATE_EXPR)'
+      );
+      tok.exitExpr();
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Expression variable state:
+
+state[Tokenizer.STATE_EXPR_VAR] = function (tok, stream) {
+  var chr = stream.next();
+  switch (true) {
+    case CharTester.isAlpha(chr):
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      stream.consume();
+      tok.tok.name += chr;
+      break;
+
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      stream.consume();
+      tok.emit();
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      break;
+
+    case -1 === chr:
+      tok.parser.report(
+        'error',
+        'Unexpected EOF (STATE_EXPR_VAR)'
+      );
+      // tok.emit();
+      // tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.exitExpr();
+      break;
+
+    default:
+      tok.emit();
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// After expression variable state:
+
+state[Tokenizer.STATE_EXPR_AFTER_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      break; // ignore
+
+    case '+' === chr:
+    case '-' === chr:
+    case '*' === chr:
+    case '/' === chr:
+      tok.buffer += chr;
+      tok.emit({
+        type: Token.OPERATOR,
+        sign: chr
+      });
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_OPERATOR);
+      break;
+
+    case tok.closeExprDelim === chr + stream.next(tok.closeExprDelim.length - 1):
+      tok.buffer += tok.closeExprDelim;
+      tok.emit({
+        type: Token.END_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      stream.shift(tok.closeExprDelim.length - 1);
+      tok.popState();
+      tok.releaseTokenQueue();
+      break;
+
+    case ')' === chr:
+      tok.buffer += chr;
+      tok.emit({
+        type: Token.END_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      tok.popState();
+      break;
+
+    default:
+      tok.buffer += (-1 === chr) ? '' : chr;
+      // tok.setState(Tokenizer.STATE_EXPR);
+      tok.parser.report(
+        'error',
+        'Unexpected character: ' + chr + ' (STATE_EXPR_AFTER_VALUE)'
+      );
+      tok.exitExpr();
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// After expression operator state:
+
+state[Tokenizer.STATE_EXPR_AFTER_OPERATOR] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      break;
+
+    case '\'' === chr:
+    case '"' === chr:
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.STR,
+        data: ''
+      };
+      tok.attrDelimiter = chr;
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.NUM,
+        value: chr
+      };
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_NUMBER_VALUE);
+      break;
+
+    case '(' === chr:
+      tok.buffer += chr;
+      // inception
+      tok.emit({
+        type: Token.START_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_EXPR);
+      break;
+
+    default:
+      tok.buffer += (-1 === chr) ? '' : chr;
+      tok.parser.report(
+        'error',
+        'Unexpected character: ' + chr + ' (STATE_EXPR_AFTER_OPERATOR)'
+      );
+      tok.exitExpr();
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Dynamic string value state:
+
+state[Tokenizer.STATE_DYNAMIC_STRING_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case '\\' === chr:
+      tok.buffer += chr;
+      tok.setState(Tokenizer.STATE_ARRAY_STRING_ESCAPED_VALUE);
+      break;
+
+    case tok.attrDelimiter === chr:
+      tok.buffer += chr;
+      tok.emit();
+      tok.popState();
+      break;
+
+    case -1 === chr:
+      tok.parser.report(
+        'exception',
+        'Unexpected EOF (STATE_DYNAMIC_STRING_VALUE)'
+      );
+      break;
+
+    default:
+      tok.buffer += chr;
+      tok.tok.data += chr;
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Dynamic number value state:
+
+state[Tokenizer.STATE_DYNAMIC_NUMBER_VALUE] = function (tok, stream) {
+  var chr = stream.next();
+  switch (true) {
+
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      stream.shift(1);
+      tok.tok.value += chr;
+      break;
+
+    case '.' === chr:
+      tok.buffer += chr;
+      tok.tok.value += '.';
+      stream.shift(1);
+      tok.setState(Tokenizer.STATE_DYNAMIC_NUMBER_VALUE_AFTER_DECIMAL);
+      break;
+
+    default:
+      tok.emit();
+      tok.popState();
+      break;
+  }
+};
+
 function TreeConstructor(prs) {
   if (! prs) {
     throw new Error('Missing `parser` for TreeConstructor');
@@ -2731,11 +3388,9 @@ function TreeConstructor(prs) {
 }
 
 // exports
-var mode = {},
-    // struct = structure || (structure = {}),
-    Token = structure.Token,
-    // Node = structure.Node,
-    CharTester = structure.CharTester;
+var Token = structure.Token,
+    CharTester = structure.CharTester,
+    mode = {};
 
 // exports
 structure.TreeConstructor = TreeConstructor;
@@ -2752,6 +3407,8 @@ TreeConstructor.MODE_AFTER_HTML   = 'MODE_AFTER_HTML';
 TreeConstructor.MODE_IN_START_TAG = 'MODE_IN_START_TAG';
 TreeConstructor.MODE_IN_TEXT      = 'MODE_IN_TEXT';
 TreeConstructor.MODE_ATTR_VALUE   = 'MODE_ATTR_VALUE';
+TreeConstructor.MODE_IN_ARRAY     = 'MODE_IN_ARRAY';
+TreeConstructor.MODE_IN_EXPR      = 'MODE_IN_EXPR';
 
 TreeConstructor.prototype = {
   reset: function () {
@@ -2862,6 +3519,51 @@ TreeConstructor.prototype = {
     var node = this.parser.document.createAttr(name);
     this.node.appendAttr(node);
     this.pushNode(node);
+    return node;
+  },
+
+  insertMetaAttr: function (name) {
+    var node = this.parser.document.createAttr(name);
+    this.node.appendMetaAttr(node);
+    this.pushNode(node);
+    return node;
+  },
+
+  insertArray: function (name) {
+    var node = this.parser.document.createArray(name);
+    this.node.appendChild(node);
+    this.pushNode(node);
+    return node;
+  },
+
+  insertString: function (data) {
+    var node = this.parser.document.createString(data);
+    this.node.appendChild(node);
+    return node;
+  },
+
+  insertNumber: function (value) {
+    var node = this.parser.document.createNumber(value);
+    this.node.appendChild(node);
+    return node;
+  },
+
+  insertExpr: function () {
+    var node = this.parser.document.createExpr();
+    this.node.appendChild(node);
+    this.pushNode(node);
+    return node;
+  },
+
+  insertVar: function (name) {
+    var node = this.parser.document.createVar(name);
+    this.node.appendChild(node);
+    return node;
+  },
+
+  insertOperator: function (sign) {
+    var node = this.parser.document.createOperator(sign);
+    this.node.appendChild(node);
     return node;
   },
 
@@ -3226,7 +3928,7 @@ mode[TreeConstructor.MODE_IN_BODY] = function (scope, tok) {
       scope.insertComment(tok.data);
       break;
 
-    case Token.EXPR_OPEN === tok.type:
+    case Token.START_EXPR === tok.type:
       scope.insertExpr();
       scope.pushMode(TreeConstructor.MODE_IN_EXPR);
       break;
@@ -3234,7 +3936,7 @@ mode[TreeConstructor.MODE_IN_BODY] = function (scope, tok) {
     default:
       scope.parser.report(
         'exception',
-        'Unexpected token in body: ' + tok.type
+        'Unexpected token: ' + tok.type + ' (MODE_IN_BODY)'
       );
       break;
   }
@@ -3297,7 +3999,7 @@ mode[TreeConstructor.MODE_AFTER_BODY] = function (scope, tok) {
     default:
       scope.parser.report(
         'exception',
-        'Unexpected token after body: ' + tok.type
+        'Unexpected token after body: ' + tok.type + ' (MODE_AFTER_BODY)'
       );
       scope.setMode(TreeConstructor.MODE_IN_BODY);
       scope.pushNode(scope.parser.document.bodyElement); // reinsert the body element to the stack of open element
@@ -3321,7 +4023,7 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
 
     case Token.START_ARR === tok.type:
       scope.insertArray();
-      scope.pushMode(TreeConstructor.MODE_ARR);
+      scope.pushMode(TreeConstructor.MODE_IN_ARRAY);
       break;
 
     case Token.START_OBJ === tok.type:
@@ -3333,7 +4035,10 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
       while (structure.Node.NODE_ATTR === scope.node.type) {
         scope.popNode();
       }
-      if (scope.node.mayContainAttribute(tok.name)) {
+      if (scope.node.mayContainMetaAttribute(tok.name)) {
+        scope.insertMetaAttr(tok.name);
+        // throw new Error('not implemeneted');
+      } else if (scope.node.mayContainAttribute(tok.name)) {
         scope.insertAttr(tok.name);
       } else {
         scope.insertAttr('data-' + tok.name);
@@ -3460,7 +4165,75 @@ mode[TreeConstructor.MODE_ATTR_VALUE] = function (scope, tok) {
     default:
       scope.parser.report(
         'exception',
-        'Unexpected token in attribute value: ' + tok.type + ' (MODE_ATTR_VALUE)'
+        'Unexpected token: ' + tok.type + ' (MODE_ATTR_VALUE)'
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// In attr value mode
+
+mode[TreeConstructor.MODE_IN_ARRAY] = function (scope, tok) {
+  switch (true) {
+    case Token.STR === tok.type:
+      scope.insertString(tok.data);
+      break;
+
+    case Token.END_ARR === tok.type:
+      scope.popMode();
+      scope.popNode();
+      break;
+
+    default:
+      scope.parser.report(
+        'exception',
+        'Unexpected token: ' + tok.type + ' (MODE_IN_ARRAY)'
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// In expression mode
+
+mode[TreeConstructor.MODE_IN_EXPR] = function (scope, tok) {
+  switch (true) {
+    case Token.EOF === tok.type:
+      scope.popMode();
+      break;
+
+    case Token.VAR === tok.type:
+      scope.insertVar(tok.name);
+      break;
+
+    case Token.STR === tok.type:
+      scope.insertString(tok.data);
+      break;
+
+    case Token.NUM === tok.type:
+      scope.insertNumber(tok.value);
+      break;
+
+    case Token.OPERATOR === tok.type:
+      scope.insertOperator(tok.sign);
+      break;
+
+    case Token.START_EXPR === tok.type:
+      // inception
+      scope.insertExpr();
+      scope.pushMode(TreeConstructor.MODE_IN_EXPR);
+      break;
+
+    case Token.END_EXPR === tok.type:
+      scope.popMode();
+      scope.popNode();
+      break;
+
+    default:
+      scope.parser.report(
+        'exception',
+        'Unexpected token: ' + tok.type + ' (MODE_IN_EXPR)'
       );
       break;
   }
@@ -3604,10 +4377,56 @@ Compiler.prototype = {
         ret += '"';
         break;
 
+      case structure.Node.NODE_ARRAY:
+        ret += 'Array(' + node.childNodes.length + ')';
+        break;
+
+      case structure.Node.NODE_EXPR:
+        if (node.childNodes.length) {
+          ret += this.compileExpr(node);
+        }
+        break;
+
+      case structure.Node.NODE_VAR:
+        ret += 'this.document.context.' + node.name;
+        break;
+
+      case structure.Node.NODE_OPERATOR:
+        ret += ' ';
+        ret += node.sign;
+        ret += ' ';
+        break;
+
+      case structure.Node.NODE_NUMBER:
+        ret += node.value;
+        break;
+
+      case structure.Node.NODE_STRING:
+        ret += '\'' + node.data.replace(/(\')/gm, '\\\'') + '\'';
+        break;
+
       default:
         throw new Error('Unsupported node type in compiler: ' + node.type);
     }
     return ret;
+  },
+
+  compileExpr: function (node) {
+    var ret = '';
+
+    if (structure.NODE_EXPR === node.parentNode.type) {
+      // ret += '(';
+    }
+
+    ret += this.compileNodes(node.childNodes);
+
+    if (structure.NODE_EXPR === node.parentNode.type) {
+      // ret += ')';
+    }
+
+    console.log(ret);
+
+    return eval(ret);
   }
 };
 })(this);

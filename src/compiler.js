@@ -55,9 +55,55 @@ Compiler.prototype = {
         ret += '"';
         break;
 
+      case structure.Node.NODE_ARRAY:
+        ret += 'Array(' + node.childNodes.length + ')';
+        break;
+
+      case structure.Node.NODE_EXPR:
+        if (node.childNodes.length) {
+          ret += this.compileExpr(node);
+        }
+        break;
+
+      case structure.Node.NODE_VAR:
+        ret += 'this.document.context.' + node.name;
+        break;
+
+      case structure.Node.NODE_OPERATOR:
+        ret += ' ';
+        ret += node.sign;
+        ret += ' ';
+        break;
+
+      case structure.Node.NODE_NUMBER:
+        ret += node.value;
+        break;
+
+      case structure.Node.NODE_STRING:
+        ret += '\'' + node.data.replace(/(\')/gm, '\\\'') + '\'';
+        break;
+
       default:
         throw new Error('Unsupported node type in compiler: ' + node.type);
     }
     return ret;
+  },
+
+  compileExpr: function (node) {
+    var ret = '';
+
+    if (structure.NODE_EXPR === node.parentNode.type) {
+      // ret += '(';
+    }
+
+    ret += this.compileNodes(node.childNodes);
+
+    if (structure.NODE_EXPR === node.parentNode.type) {
+      // ret += ')';
+    }
+
+    console.log(ret);
+
+    return eval(ret);
   }
 };

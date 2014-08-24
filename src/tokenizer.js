@@ -5,7 +5,7 @@ function Tokenizer(prs) {
   this.parser = prs;
   this.reset();
   this.openExprDelim = '[[';
-  this.closeExprDelim = '[[';
+  this.closeExprDelim = ']]';
   this.replacementChar = '?';
 }
 
@@ -39,7 +39,27 @@ Tokenizer.STATE_BEFORE_ATTR_VALUE       = 'STATE_BEFORE_ATTR_VALUE';
 Tokenizer.STATE_ATTR_VALUE              = 'STATE_ATTR_VALUE';
 Tokenizer.STATE_AFTER_ATTR_VALUE        = 'STATE_AFTER_ATTR_VALUE';
 
-var state = {},
+Tokenizer.STATE_BEFORE_ARRAY_VALUE = 'STATE_BEFORE_ARRAY_VALUE';
+Tokenizer.STATE_BEFORE_OBJECT_KEY  = 'STATE_BEFORE_OBJECT_KEY';
+Tokenizer.STATE_ARRAY_STRING_ESCAPED_VALUE = 'STATE_ARRAY_STRING_ESCAPED_VALUE';
+Tokenizer.STATE_AFTER_ARRAY_VALUE = 'STATE_AFTER_ARRAY_VALUE';
+
+Tokenizer.STATE_DYNAMIC_STRING_VALUE = 'STATE_DYNAMIC_STRING_VALUE';
+Tokenizer.STATE_DYNAMIC_NUMBER_VALUE = 'STATE_DYNAMIC_NUMBER_VALUE';
+Tokenizer.STATE_DYNAMIC_NUMBER_VALUE_AFTER_DECIMAL = 'STATE_DYNAMIC_NUMBER_VALUE_AFTER_DECIMAL';
+
+Tokenizer.STATE_EXPR = 'STATE_EXPR';
+Tokenizer.STATE_EXPR_VAR = 'STATE_EXPR_VAR';
+Tokenizer.STATE_EXPR_AFTER_VALUE = 'STATE_EXPR_AFTER_VALUE';
+Tokenizer.STATE_EXPR_AFTER_OPERATOR = 'STATE_EXPR_AFTER_OPERATOR';
+
+var exprStates = [
+      Tokenizer.STATE_EXPR,
+      Tokenizer.STATE_EXPR_VAR,
+      Tokenizer.STATE_EXPR_AFTER_VALUE,
+      Tokenizer.STATE_EXPR_AFTER_OPERATOR
+    ],
+    state = {},
     Token = structure.Token,
     CharTester = structure.CharTester;
 
@@ -48,6 +68,9 @@ var state = {},
 
 Tokenizer.prototype = {
   reset: function () {
+    this.queueTokens = false;
+    this.tokQueue = [];
+    this.stateStack = [];
     this.state = Tokenizer.STATE_DATA;
     this.tok = null;
     this.buffer = '';
@@ -101,7 +124,41 @@ Tokenizer.prototype = {
       this.prevStartTagToken = tok;
     }
 
-    this.parser.handleToken(tok);
+    if (this.queueTokens) {
+      this.tokQueue.push(tok);
+    } else {
+      this.parser.handleToken(tok);
+    }
+  },
+
+  releaseTokenQueue: function () {
+    var i, len;
+    this.queueTokens = false;
+    for (i = 0, len = this.tokQueue.length; i < len; i++) {
+      this.emit(this.tokQueue[i]);
+    }
+    this.tokQueue = [];
+  },
+
+  exitExpr: function () {
+    
+    this.buffer = '';
+    this.tokQueue = [];
+    
+    this.queueTokens = false;
+
+    while (-1 < exprStates.indexOf(this.state)) {
+      this.popState();
+    }
+
+    // this.releaseTokenQueue();
+
+    this.tok = null;
+    this.emit({
+      type: Token.CHAR,
+      data: this.buffer
+    });
+
   },
 
   currentEndTagIsAppropriate: function () {
@@ -116,6 +173,18 @@ Tokenizer.prototype = {
       throw new Error('Cannot set undefined state');
     }
     this.state = state;
+  },
+
+  pushState: function (state) {
+    this.stateStack.push(this.state);
+    this.state = state;
+  },
+
+  popState: function () {
+    if (! this.stateStack.length) {
+      throw new Error('The state stack cannot be popped because it\'s already empty');
+    }
+    this.state = this.stateStack.pop();
   }
 };
 
@@ -143,10 +212,14 @@ state[Tokenizer.STATE_DATA] = function (tok, stream) {
       break;
 
     case tok.openExprDelim === chr + stream.next(tok.openExprDelim.length - 1):
-      tok.parser.report(
-        'exception',
-        'Not implemented (STATE_DATA)'
-      );
+      tok.queueTokens = true;
+      tok.emit({
+        type: Token.START_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      stream.shift(tok.openExprDelim.length - 1);
+      tok.buffer = tok.openExprDelim;
+      tok.pushState(Tokenizer.STATE_EXPR);
       break;
 
     case '\0' === chr:
@@ -174,7 +247,6 @@ state[Tokenizer.STATE_DATA] = function (tok, stream) {
 
 state[Tokenizer.STATE_MARKUP_DECLARATION_OPEN] = function (tok, stream) {
   // var chr = stream.consume();
-  
 
   switch (true) {
     case '--' === stream.next(2):
@@ -430,7 +502,7 @@ state[Tokenizer.STATE_BOGUS_COMMENT] = function (tok, stream) {
     type: Token.COMMENT,
     data: buf
   });
-  tok.state = Tokenizer.STATE_DATA;
+  tok.setState(Tokenizer.STATE_DATA);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -554,7 +626,10 @@ state[Tokenizer.STATE_TAG_NAME] = function (tok, stream) {
 
     case -1 === chr:
       tok.parser.report('notice', 'Unexpected EOF in tag name');
-      tmp = tok.tok.name;
+      tmp = '';
+      if (tok.tok) {
+        tmp = tok.tok.name;
+      }
       tok.tok = null;
       tok.emit({
         type: Token.CHAR,
@@ -854,6 +929,16 @@ state[Tokenizer.STATE_BEFORE_ATTR_KEY] = function (tok, stream) {
       tok.setState(Tokenizer.STATE_ATTR_KEY);
       break;
 
+    case '>' === chr:
+      // tok.emit();
+      tok.setState(Tokenizer.STATE_DATA);
+      tok.emit({
+        type: Token.START_TAG_CLOSE,
+        selfClosing: false,
+        offset: stream.pointer,
+      });
+      break;
+
     case -1 === chr:
       tok.parser.report(
         'error',
@@ -927,7 +1012,7 @@ state[Tokenizer.STATE_BEFORE_ATTR_VALUE] = function (tok, stream) {
         type: Token.START_ARR
       });
       tok.setState(Tokenizer.STATE_AFTER_ATTR_VALUE);
-      tok.pushState(Tokenizer.BEFORE_JSON_ARRAY_VALUE);
+      tok.pushState(Tokenizer.STATE_BEFORE_ARRAY_VALUE);
       break;
 
     case '{' === chr:
@@ -935,7 +1020,7 @@ state[Tokenizer.STATE_BEFORE_ATTR_VALUE] = function (tok, stream) {
         type: Token.START_OBJ
       });
       tok.setState(Tokenizer.STATE_AFTER_ATTR_VALUE);
-      tok.pushState(Tokenizer.BEFORE_JSON_OBJECT_KEY);
+      tok.pushState(Tokenizer.STATE_BEFORE_OBJECT_KEY);
       break;
 
     case '"' === chr:
@@ -951,6 +1036,85 @@ state[Tokenizer.STATE_BEFORE_ATTR_VALUE] = function (tok, stream) {
       tok.parser.report(
         'exception',
         'Unexpected character before attribute value: ' + chr
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Before array value state:
+
+state[Tokenizer.STATE_BEFORE_ARRAY_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case ']' === chr:
+      tok.emit({
+        type: Token.END_ARR
+      });
+      tok.popState();
+      break;
+
+    case '\'' === chr:
+    case '"' === chr:
+      tok.tok = {
+        type: Token.STR,
+        data: ''
+      };
+      tok.attrDelimiter = chr;
+      tok.setState(Tokenizer.STATE_AFTER_ARRAY_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+
+    default:
+      tok.parser.report(
+        'exception',
+        'Unexpected character: ' + chr + ' (STATE_BEFORE_ARRAY_VALUE)'
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Array string value (escaped) state:
+
+state[Tokenizer.STATE_ARRAY_STRING_ESCAPED_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  // console.log(chr);
+  switch (true) {
+
+    case -1 === chr:
+      tok.parser.report(
+        'exception',
+        'Unexpected EOF (STATE_ARRAY_STRING_ESCAPED_VALUE)'
+      );
+      break;
+
+    default:
+      tok.tok.data += chr;
+      tok.setState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// After array value state:
+
+state[Tokenizer.STATE_AFTER_ARRAY_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case ']' === chr:
+      tok.emit({
+        type: Token.END_ARR
+      });
+      tok.popState();
+      break;
+
+    default:
+      tok.parser.report(
+        'exception',
+        'Unexpected character: ' + chr + ' (STATE_AFTER_ARRAY_VALUE)'
       );
       break;
   }
@@ -1022,6 +1186,274 @@ state[Tokenizer.STATE_AFTER_ATTR_VALUE] = function (tok, stream) {
         'exception',
         'Unexpected character after attribute value: ' + chr
       );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Expression state:
+
+state[Tokenizer.STATE_EXPR] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      break;
+
+    case CharTester.isAlpha(chr):
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.VAR,
+        name: chr
+      };
+      tok.setState(Tokenizer.STATE_EXPR_VAR);
+      break;
+
+    case '\'' === chr:
+    case '"' === chr:
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.STR,
+        data: ''
+      };
+      tok.attrDelimiter = chr;
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.NUM,
+        value: chr
+      };
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_NUMBER_VALUE);
+      break;
+
+    case '(' === chr:
+      tok.buffer += chr;
+      // inception
+      tok.emit({
+        type: Token.START_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_EXPR);
+      break;
+
+    default:
+      tok.buffer += chr;
+      tok.parser.report(
+        'error',
+        'Unexpected character: ' + chr + ' (STATE_EXPR)'
+      );
+      tok.exitExpr();
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Expression variable state:
+
+state[Tokenizer.STATE_EXPR_VAR] = function (tok, stream) {
+  var chr = stream.next();
+  switch (true) {
+    case CharTester.isAlpha(chr):
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      stream.consume();
+      tok.tok.name += chr;
+      break;
+
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      stream.consume();
+      tok.emit();
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      break;
+
+    case -1 === chr:
+      tok.parser.report(
+        'error',
+        'Unexpected EOF (STATE_EXPR_VAR)'
+      );
+      // tok.emit();
+      // tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.exitExpr();
+      break;
+
+    default:
+      tok.emit();
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// After expression variable state:
+
+state[Tokenizer.STATE_EXPR_AFTER_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      break; // ignore
+
+    case '+' === chr:
+    case '-' === chr:
+    case '*' === chr:
+    case '/' === chr:
+      tok.buffer += chr;
+      tok.emit({
+        type: Token.OPERATOR,
+        sign: chr
+      });
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_OPERATOR);
+      break;
+
+    case tok.closeExprDelim === chr + stream.next(tok.closeExprDelim.length - 1):
+      tok.buffer += tok.closeExprDelim;
+      tok.emit({
+        type: Token.END_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      stream.shift(tok.closeExprDelim.length - 1);
+      tok.popState();
+      tok.releaseTokenQueue();
+      break;
+
+    case ')' === chr:
+      tok.buffer += chr;
+      tok.emit({
+        type: Token.END_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      tok.popState();
+      break;
+
+    default:
+      tok.buffer += (-1 === chr) ? '' : chr;
+      // tok.setState(Tokenizer.STATE_EXPR);
+      tok.parser.report(
+        'error',
+        'Unexpected character: ' + chr + ' (STATE_EXPR_AFTER_VALUE)'
+      );
+      tok.exitExpr();
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// After expression operator state:
+
+state[Tokenizer.STATE_EXPR_AFTER_OPERATOR] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case CharTester.isWhiteSpace(chr):
+      tok.buffer += chr;
+      break;
+
+    case '\'' === chr:
+    case '"' === chr:
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.STR,
+        data: ''
+      };
+      tok.attrDelimiter = chr;
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_STRING_VALUE);
+      break;
+
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      tok.tok = {
+        type: Token.NUM,
+        value: chr
+      };
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_DYNAMIC_NUMBER_VALUE);
+      break;
+
+    case '(' === chr:
+      tok.buffer += chr;
+      // inception
+      tok.emit({
+        type: Token.START_EXPR,
+        offset: stream.getPointer() - 1
+      });
+      tok.setState(Tokenizer.STATE_EXPR_AFTER_VALUE);
+      tok.pushState(Tokenizer.STATE_EXPR);
+      break;
+
+    default:
+      tok.buffer += (-1 === chr) ? '' : chr;
+      tok.parser.report(
+        'error',
+        'Unexpected character: ' + chr + ' (STATE_EXPR_AFTER_OPERATOR)'
+      );
+      tok.exitExpr();
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Dynamic string value state:
+
+state[Tokenizer.STATE_DYNAMIC_STRING_VALUE] = function (tok, stream) {
+  var chr = stream.consume();
+  switch (true) {
+
+    case '\\' === chr:
+      tok.buffer += chr;
+      tok.setState(Tokenizer.STATE_ARRAY_STRING_ESCAPED_VALUE);
+      break;
+
+    case tok.attrDelimiter === chr:
+      tok.buffer += chr;
+      tok.emit();
+      tok.popState();
+      break;
+
+    case -1 === chr:
+      tok.parser.report(
+        'exception',
+        'Unexpected EOF (STATE_DYNAMIC_STRING_VALUE)'
+      );
+      break;
+
+    default:
+      tok.buffer += chr;
+      tok.tok.data += chr;
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Dynamic number value state:
+
+state[Tokenizer.STATE_DYNAMIC_NUMBER_VALUE] = function (tok, stream) {
+  var chr = stream.next();
+  switch (true) {
+
+    case CharTester.isNumber(chr):
+      tok.buffer += chr;
+      stream.shift(1);
+      tok.tok.value += chr;
+      break;
+
+    case '.' === chr:
+      tok.buffer += chr;
+      tok.tok.value += '.';
+      stream.shift(1);
+      tok.setState(Tokenizer.STATE_DYNAMIC_NUMBER_VALUE_AFTER_DECIMAL);
+      break;
+
+    default:
+      tok.emit();
+      tok.popState();
       break;
   }
 };

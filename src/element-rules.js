@@ -43,11 +43,23 @@ structure.elementRules = {
     allowedChildElements: {
       'head': [],
       'body': []
+    },
+    allowedMetaAttrs: {
+      'scripts': [],
+      'style-sheets': [],
+      'description': [],
+      'keywords': [],
+      'author': [],
+      'charset': [],
+      'application-name': [],
+      'generator': []
     }
   },
   head: {
     allowedAttrs: {
       'profile': []
+    },
+    allowedMetaAttrs: {
     },
     allowedChildElements: {
       'title': [],
@@ -103,6 +115,8 @@ structure.elementRules = {
   body: {
     allowedAttrs: {
       'onafterprint': [],
+    },
+    allowedMetaAttrs: {
     },
     allowedChildElements: {
       'script': {
@@ -184,7 +198,11 @@ structure.elementRules = {
       },
       'p': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'hr': {
@@ -192,20 +210,28 @@ structure.elementRules = {
           'color': []
         }
       },
-      'pre': [],
+      'pre': {
+        allowedChildElements: {
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
+        }
+      },
       'blockquote': {
         allowedAttrs: {
           'cite': []
         }
       },
       'ol': {
-        allowedChildElements: {
-          'li': []
-        },
         allowedAttrs: {
           'reversed': [],
           'start': [],
           'type': []
+        },
+        allowedChildElements: {
+          'li': []
         }
       },
       'ul': {
@@ -217,6 +243,9 @@ structure.elementRules = {
         allowedAttrs: {
           'value': []
         },
+        allowedChildElements: {
+          '#flow' : []
+        }
       },
       'dl': {
         allowedChildElements: {
@@ -242,7 +271,7 @@ structure.elementRules = {
       'figcaption': [],
       'div': {
         allowedChildElements: {
-          '#flow': [],
+          '#flow': []
         }
       },
       'a': {
@@ -259,6 +288,10 @@ structure.elementRules = {
           'target': [],
           'type': [],
           'urn': []
+        },
+        allowedChildElements: {
+          '#flow': [],
+          '#phrasing': []
         }
       },
       'em': [],
@@ -310,6 +343,9 @@ structure.elementRules = {
       'br': {
         allowedAttrs: {
           'clear': []
+        },
+        allowedChildElements: {
+          '#phrasing': []
         }
       },
       'wbr': [],
@@ -659,6 +695,9 @@ structure.elementRules = {
           'name': [],
           'type': [],
           'value': []
+        },
+        allowedChildElements: {
+          '#phrasing': []
         }
       },
       'select': {

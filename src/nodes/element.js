@@ -29,6 +29,10 @@ Element.prototype.mayContainAttribute = function (name) {
   return this.getDirectiveSet().mayContainAttribute(name);
 };
 
+Element.prototype.mayContainMetaAttribute = function (name) {
+  return this.getDirectiveSet().mayContainMetaAttribute(name);
+};
+
 Element.prototype.isVoidElement = function () {
   return this.getDirectiveSet().isVoidElement();
 };
@@ -41,7 +45,22 @@ Element.prototype.getDirectiveSet = function () {
 };
 
 Element.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var i, len, ret = structure.Node.prototype.dump.call(this);
+
+  if (this.attrs.length) {
+    ret.attrs = {};
+    for (i = 0, len = this.attrs.length; i < len; i++) {
+      ret.attrs[this.attrs[i].name] = this.attrs[i].dump();
+    }
+  }
+
+  if (this.metaAttrs.length) {
+    ret.metaAttrs = {};
+    for (i = 0, len = this.metaAttrs.length; i < len; i++) {
+      ret.metaAttrs[this.metaAttrs[i].name] = this.metaAttrs[i].dump();
+    }
+  }
+
   ret.outerStartOffset = this.outerStartOffset;
   ret.innerStartOffset = this.innerStartOffset;
   ret.innerEndOffset = this.innerEndOffset;

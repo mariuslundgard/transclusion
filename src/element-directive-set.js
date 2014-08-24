@@ -35,6 +35,20 @@ ElementDirectiveSet.prototype = {
     return false;
   },
 
+  mayContainMetaAttribute: function (name) {
+    var i, len;
+
+    this.loadDirectives();
+
+    for (i = 0, len = this.set.length; i < len; i++) {
+      if (this.set[i].mayContainMetaAttribute(name)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
   isVoidElement: function () {
     var i, len;
 

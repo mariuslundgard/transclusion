@@ -7,11 +7,9 @@ function TreeConstructor(prs) {
 }
 
 // exports
-var mode = {},
-    // struct = structure || (structure = {}),
-    Token = structure.Token,
-    // Node = structure.Node,
-    CharTester = structure.CharTester;
+var Token = structure.Token,
+    CharTester = structure.CharTester,
+    mode = {};
 
 // exports
 structure.TreeConstructor = TreeConstructor;
@@ -28,6 +26,8 @@ TreeConstructor.MODE_AFTER_HTML   = 'MODE_AFTER_HTML';
 TreeConstructor.MODE_IN_START_TAG = 'MODE_IN_START_TAG';
 TreeConstructor.MODE_IN_TEXT      = 'MODE_IN_TEXT';
 TreeConstructor.MODE_ATTR_VALUE   = 'MODE_ATTR_VALUE';
+TreeConstructor.MODE_IN_ARRAY     = 'MODE_IN_ARRAY';
+TreeConstructor.MODE_IN_EXPR      = 'MODE_IN_EXPR';
 
 TreeConstructor.prototype = {
   reset: function () {
@@ -138,6 +138,51 @@ TreeConstructor.prototype = {
     var node = this.parser.document.createAttr(name);
     this.node.appendAttr(node);
     this.pushNode(node);
+    return node;
+  },
+
+  insertMetaAttr: function (name) {
+    var node = this.parser.document.createAttr(name);
+    this.node.appendMetaAttr(node);
+    this.pushNode(node);
+    return node;
+  },
+
+  insertArray: function (name) {
+    var node = this.parser.document.createArray(name);
+    this.node.appendChild(node);
+    this.pushNode(node);
+    return node;
+  },
+
+  insertString: function (data) {
+    var node = this.parser.document.createString(data);
+    this.node.appendChild(node);
+    return node;
+  },
+
+  insertNumber: function (value) {
+    var node = this.parser.document.createNumber(value);
+    this.node.appendChild(node);
+    return node;
+  },
+
+  insertExpr: function () {
+    var node = this.parser.document.createExpr();
+    this.node.appendChild(node);
+    this.pushNode(node);
+    return node;
+  },
+
+  insertVar: function (name) {
+    var node = this.parser.document.createVar(name);
+    this.node.appendChild(node);
+    return node;
+  },
+
+  insertOperator: function (sign) {
+    var node = this.parser.document.createOperator(sign);
+    this.node.appendChild(node);
     return node;
   },
 
@@ -502,7 +547,7 @@ mode[TreeConstructor.MODE_IN_BODY] = function (scope, tok) {
       scope.insertComment(tok.data);
       break;
 
-    case Token.EXPR_OPEN === tok.type:
+    case Token.START_EXPR === tok.type:
       scope.insertExpr();
       scope.pushMode(TreeConstructor.MODE_IN_EXPR);
       break;
@@ -510,7 +555,7 @@ mode[TreeConstructor.MODE_IN_BODY] = function (scope, tok) {
     default:
       scope.parser.report(
         'exception',
-        'Unexpected token in body: ' + tok.type
+        'Unexpected token: ' + tok.type + ' (MODE_IN_BODY)'
       );
       break;
   }
@@ -573,7 +618,7 @@ mode[TreeConstructor.MODE_AFTER_BODY] = function (scope, tok) {
     default:
       scope.parser.report(
         'exception',
-        'Unexpected token after body: ' + tok.type
+        'Unexpected token after body: ' + tok.type + ' (MODE_AFTER_BODY)'
       );
       scope.setMode(TreeConstructor.MODE_IN_BODY);
       scope.pushNode(scope.parser.document.bodyElement); // reinsert the body element to the stack of open element
@@ -597,7 +642,7 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
 
     case Token.START_ARR === tok.type:
       scope.insertArray();
-      scope.pushMode(TreeConstructor.MODE_ARR);
+      scope.pushMode(TreeConstructor.MODE_IN_ARRAY);
       break;
 
     case Token.START_OBJ === tok.type:
@@ -609,7 +654,10 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
       while (structure.Node.NODE_ATTR === scope.node.type) {
         scope.popNode();
       }
-      if (scope.node.mayContainAttribute(tok.name)) {
+      if (scope.node.mayContainMetaAttribute(tok.name)) {
+        scope.insertMetaAttr(tok.name);
+        // throw new Error('not implemeneted');
+      } else if (scope.node.mayContainAttribute(tok.name)) {
         scope.insertAttr(tok.name);
       } else {
         scope.insertAttr('data-' + tok.name);
@@ -736,7 +784,75 @@ mode[TreeConstructor.MODE_ATTR_VALUE] = function (scope, tok) {
     default:
       scope.parser.report(
         'exception',
-        'Unexpected token in attribute value: ' + tok.type + ' (MODE_ATTR_VALUE)'
+        'Unexpected token: ' + tok.type + ' (MODE_ATTR_VALUE)'
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// In attr value mode
+
+mode[TreeConstructor.MODE_IN_ARRAY] = function (scope, tok) {
+  switch (true) {
+    case Token.STR === tok.type:
+      scope.insertString(tok.data);
+      break;
+
+    case Token.END_ARR === tok.type:
+      scope.popMode();
+      scope.popNode();
+      break;
+
+    default:
+      scope.parser.report(
+        'exception',
+        'Unexpected token: ' + tok.type + ' (MODE_IN_ARRAY)'
+      );
+      break;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// In expression mode
+
+mode[TreeConstructor.MODE_IN_EXPR] = function (scope, tok) {
+  switch (true) {
+    case Token.EOF === tok.type:
+      scope.popMode();
+      break;
+
+    case Token.VAR === tok.type:
+      scope.insertVar(tok.name);
+      break;
+
+    case Token.STR === tok.type:
+      scope.insertString(tok.data);
+      break;
+
+    case Token.NUM === tok.type:
+      scope.insertNumber(tok.value);
+      break;
+
+    case Token.OPERATOR === tok.type:
+      scope.insertOperator(tok.sign);
+      break;
+
+    case Token.START_EXPR === tok.type:
+      // inception
+      scope.insertExpr();
+      scope.pushMode(TreeConstructor.MODE_IN_EXPR);
+      break;
+
+    case Token.END_EXPR === tok.type:
+      scope.popMode();
+      scope.popNode();
+      break;
+
+    default:
+      scope.parser.report(
+        'exception',
+        'Unexpected token: ' + tok.type + ' (MODE_IN_EXPR)'
       );
       break;
   }

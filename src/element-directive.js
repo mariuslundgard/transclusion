@@ -22,32 +22,45 @@ ElementDirective.prototype = {
     return undefined !== this.rules.allowedAttrs[name];
   },
 
+  mayContainMetaAttribute: function (name) {
+    this.loadRules();
+    return undefined !== this.rules.allowedMetaAttrs[name];
+  },
+
   isVoidElement: function () {
     this.loadRules();
     return -1 < structure.elementRules.voidElements.indexOf(this.name);
   },
 
   loadRules: function () {
-    var elRules, allowedAttrs, allowedChildElements, expandedChildElements;
+    var elRules,
+        allowedAttrs,
+        allowedMetaAttrs,
+        allowedChildElements,
+        expandedChildElements;
 
     if (! this.isLoaded) {
       allowedAttrs = {};
+      allowedMetaAttrs = {};
       allowedChildElements = {};
       expandedChildElements = {};
 
       switch (this.name) {
         case 'html':
           allowedAttrs = structure.elementRules.html.allowedAttrs;
+          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
           allowedChildElements = structure.elementRules.html.allowedChildElements;
           break;
 
         case 'head':
           allowedAttrs = structure.elementRules.head.allowedAttrs;
+          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
           allowedChildElements = structure.elementRules.head.allowedChildElements;
           break;
 
         case 'body':
           allowedAttrs = structure.elementRules.body.allowedAttrs;
+          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
           allowedChildElements = structure.elementRules.body.allowedChildElements;
           break;
 
@@ -69,10 +82,20 @@ ElementDirective.prototype = {
 
       this.extendAllowedAttrs(structure.elementRules.globalAttrs);
       this.extendAllowedAttrs(allowedAttrs);
+      this.extendAllowedMetaAttrs(allowedMetaAttrs);
       this.extendAllowedChildElements(allowedChildElements);
       this.extendAllowedChildElements(expandedChildElements);
 
       this.isLoaded = true;
+    }
+  },
+
+  extendAllowedMetaAttrs: function (rules) {
+    if (! this.rules.allowedMetaAttrs) {
+      this.rules.allowedMetaAttrs = {};
+    }
+    for (var i in rules) {
+      this.rules.allowedMetaAttrs[i] = rules[i];
     }
   },
 

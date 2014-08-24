@@ -8,6 +8,7 @@ function Node(type, name) {
   this.lastChild = null;
   this.childNodes = [];
   this.attrs = [];
+  this.metaAttrs = [];
   this.index = 0;
 
   // pointers
@@ -40,6 +41,12 @@ Node.NODE_TEXT = 3;
 Node.NODE_ATTR = 4;
 Node.NODE_EXPR = 5;
 Node.NODE_COMMENT = 6;
+Node.NODE_ARRAY = 7;
+Node.NODE_STRING = 8;
+Node.NODE_EXPR = 9;
+Node.NODE_VAR = 10;
+Node.NODE_OPERATOR = 11;
+Node.NODE_NUMBER = 12;
 
 Node.prototype = {
   setDocument: function (doc) {
@@ -73,6 +80,13 @@ Node.prototype = {
     node.parentNode = this;
     node.index = this.attrs.length;
     this.attrs.push(node);
+    return node;
+  },
+
+  appendMetaAttr: function (node) {
+    node.parentNode = this;
+    node.index = this.metaAttrs.length;
+    this.metaAttrs.push(node);
     return node;
   },
 

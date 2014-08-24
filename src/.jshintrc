@@ -18,5 +18,6 @@
     "exports": true,
     "structure": true,
     "console": true
-  }
+  },
+  "evil": true
 }

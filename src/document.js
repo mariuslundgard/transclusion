@@ -24,6 +24,9 @@ Document.prototype.reset = function () {
   if (this.parser) {
     this.parser.reset();
   }
+  this.context = {
+    test: 'Hello, world!'
+  };
   this.childNodes = [];
   this.attrs = [];
   this.firstChild = null;
@@ -80,6 +83,42 @@ Document.prototype.createComment = function (data) {
 
 Document.prototype.createAttr = function (name) {
   var node = new structure.nodes.Attr(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createArray = function (name) {
+  var node = new structure.nodes.Arr(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createString = function (data) {
+  var node = new structure.nodes.Str(data);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createExpr = function () {
+  var node = new structure.nodes.Expr();
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createVar = function (name) {
+  var node = new structure.nodes.Var(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createNumber = function (name) {
+  var node = new structure.nodes.Num(name);
+  node.setDocument(this);
+  return node;
+};
+
+Document.prototype.createOperator = function (sign) {
+  var node = new structure.nodes.Operator(sign);
   node.setDocument(this);
   return node;
 };

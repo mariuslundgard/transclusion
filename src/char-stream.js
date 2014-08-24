@@ -1,5 +1,5 @@
 function CharStream(input) {
-  this.input = input ? input.replace(/(\r\n|\n|\r)/gm,'\n') : '';
+  this.input = input ? input.replace(/(\r\n|\n|\r)/gm, '\n') : '';
   this.size = this.input.length;
   this.pointer = 0;
   this.line = 1;

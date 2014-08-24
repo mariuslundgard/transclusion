@@ -53,6 +53,12 @@ var structure = {};
 <script src="../src/nodes/attr.js"></script>
 <script src="../src/nodes/text.js"></script>
 <script src="../src/nodes/comment.js"></script>
+<script src="../src/nodes/array.js"></script>
+<script src="../src/nodes/expr.js"></script>
+<script src="../src/nodes/var.js"></script>
+<script src="../src/nodes/operator.js"></script>
+<script src="../src/nodes/string.js"></script>
+<script src="../src/nodes/num.js"></script>
 <script src="../src/char-stream.js"></script>
 <script src="../src/char-tester.js"></script>
 <script src="../src/document.js"></script>
@@ -79,7 +85,10 @@ update();
 function reset () {
   msgEl.innerHTML = '';
   destEl.value = '';
-  visFrameEl.src = 'data:text/html;charset=utf-8,' + '';
+  // visFrameEl.src = 'data:text/html;charset=utf-8,' + '';
+  iframeWin.update({
+    bodyHTML: ''
+  });
 }
 
 function update() {
@@ -122,7 +131,9 @@ function displayMessages(msg) {
 }
 
 function displayTree(doc) {
-  treeEl.innerHTML = '<pre class="monospace">' + JSON.stringify(doc.dump(), undefined, 1) + '</pre>';
+  treeEl.innerHTML = '<pre class="monospace" style="font-size: 8px;">' + 
+    JSON.stringify(doc.dump(), undefined, 1) + 
+    '</pre>';
 }
 
 function enc(str) {

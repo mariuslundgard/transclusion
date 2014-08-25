@@ -249,6 +249,9 @@ structure.elementRules = {
       'blockquote': {
         allowedAttrs: {
           'cite': []
+        },
+        allowedChildElements: {
+          '#flow': []
         }
       },
       'ol': {

@@ -152,32 +152,56 @@ structure.elementRules = {
       },
       'h1': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'h2': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'h3': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'h4': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'h5': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'h6': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'header': {
@@ -291,7 +315,11 @@ structure.elementRules = {
         },
         allowedChildElements: {
           '#flow': [],
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'em': [],
@@ -328,7 +356,11 @@ structure.elementRules = {
       'mark': [],
       'ruby': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'rt': [],
@@ -345,7 +377,11 @@ structure.elementRules = {
           'clear': []
         },
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'wbr': [],
@@ -420,7 +456,11 @@ structure.elementRules = {
           '#transparent': [],
           'source': [],
           '#flow': [],
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         },
         allowedAttrs: {
           'autoplay': [],
@@ -631,13 +671,21 @@ structure.elementRules = {
       },
       'legend': {
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'label': {
         allowedChildElements: {
-          '#phrasing': []
-      },
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
+        },
         allowedAttrs: {
           'accesskey': [],
           'for': [],
@@ -697,7 +745,11 @@ structure.elementRules = {
           'value': []
         },
         allowedChildElements: {
-          '#phrasing': []
+          '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': []
         }
       },
       'select': {
@@ -718,6 +770,10 @@ structure.elementRules = {
       'datalist': {
         allowedChildElements: {
           '#phrasing': [],
+          'a': [],
+          'del': [],
+          'ins': [],
+          'map': [],
           'option': []
         }
       },

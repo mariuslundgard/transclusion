@@ -650,15 +650,14 @@ structure.elementRules = {
           '#flow': []
         },
         allowedAttrs: {
-          'accept-charset': {
-            'action': [],
-            'autocomplete': [],
-            'enctype': [],
-            'method': [],
-            'name': [],
-            'novalidate': [],
-            'target': []
-          }
+          'accept-charset': [],
+          'action': [],
+          'autocomplete': [],
+          'enctype': [],
+          'method': [],
+          'name': [],
+          'novalidate': [],
+          'target': []
         }
       },
       'fieldset': {

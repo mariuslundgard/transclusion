@@ -1385,6 +1385,26 @@ Node.prototype = {
     return node;
   },
 
+  getAttribute: function (attrName) {
+    var i, len;
+    for (i = 0, len = this.attrs.length; i < len; i++) {
+      if (attrName === this.attrs[i].name) {
+        return this.attrs[i];
+      }
+    }
+    return null;
+  },
+
+  getMetaAttribute: function (attrName) {
+    var i, len;
+    for (i = 0, len = this.metaAttrs.length; i < len; i++) {
+      if (attrName === this.metaAttrs[i].name) {
+        return this.metaAttrs[i];
+      }
+    }
+    return null;
+  },
+
   appendAttr: function (node) {
     node.parentNode = this;
     node.index = this.attrs.length;
@@ -1800,6 +1820,7 @@ function Document(input) {
   this.input = input || '';
   this.parser = null;
   this.compiler = null;
+  this.directives = [];
   this.reset();
 }
 
@@ -1808,6 +1829,12 @@ Document.prototype.constructor = Document;
 
 // exports
 structure.Document = Document;
+
+Document.prototype.addDirective = function(name, params) {
+  var directive = new structure.ElementDirective(name, params);
+  this.directives.push(directive);
+  return directive;
+};
 
 Document.prototype.setInput = function (input) {
   if (input !== this.input) {

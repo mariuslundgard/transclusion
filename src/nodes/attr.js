@@ -7,3 +7,7 @@ Attr.prototype.constructor = Attr;
 
 // exports
 structure.nodes.Attr = Attr;
+
+Attr.prototype.evaluate = function () {
+  return this.document.getCompiler().compileNodes(this.childNodes);
+};

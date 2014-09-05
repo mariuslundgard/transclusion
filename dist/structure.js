@@ -1576,6 +1576,10 @@ Attr.prototype.constructor = Attr;
 // exports
 structure.nodes.Attr = Attr;
 
+Attr.prototype.evaluate = function () {
+  return this.document.getCompiler().compileNodes(this.childNodes);
+};
+
 function Text(data) {
   structure.Node.call(this, structure.Node.NODE_TEXT, '#text');
   this.data = data || '';

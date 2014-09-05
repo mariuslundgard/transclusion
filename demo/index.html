@@ -20,17 +20,20 @@
 .error {
   background: #f66;
 }
+#tree {
+  margin: 0;
+}
 </style>
 <link rel="stylesheet" href="https://rawgit.com/mariuslundgard/body/develop/dist/footer.css">
 </head>
-<body class="form no-margin xs-max-size">
+<body class="form no-margin no-overflow xs-max-size">
 
 <div class="full-height row rule-between">
   <div class="column span-2">
-  	<div class="scrollable full-height monospace code" id="tree"></div>
+  	<pre class="scrollable wrapper monospace code" id="tree"></pre>
   </div>
   <div class="column span-2">
-    <div class="scrollable full-height" id="messages"></div>
+    <div class="scrollable wrapper" id="messages"></div>
   </div>
   <div class="column span-2">
     <textarea class="full-height monospace code text-field" id="src" style="position: absolute; width: 100%; background: #eee;">Type some markup here...</textarea>
@@ -68,13 +71,23 @@ var structure = {};
 <script src="../src/parser.js"></script>
 <script src="../src/compiler.js"></script>
 <script>
-var srcEl = document.getElementById('src');
-var destEl = document.getElementById('dest');
-var visFrameEl = document.getElementById('visual');
-var msgEl = document.getElementById('messages');
-var treeEl = document.getElementById('tree');
-var doc = new structure.Document();
+var doc     = new structure.Document(),
+    srcEl   = document.getElementById('src'),
+    destEl  = document.getElementById('dest'),
+    frameEl = document.getElementById('visual'),
+    msgEl   = document.getElementById('messages'),
+    treeEl  = document.getElementById('tree');
+
 doc.debug = true;
+// doc.addDirective('test', {
+//   allowedParentElements: {
+//     '#flow': [],
+//     'body': []
+//   },
+//   compile: function (node, compiler) {
+//     return '{test}';
+//   }
+// });
 
 srcEl.oninput = function (e) {
   update();
@@ -85,7 +98,7 @@ update();
 function reset () {
   msgEl.innerHTML = '';
   destEl.value = '';
-  // visFrameEl.src = 'data:text/html;charset=utf-8,' + '';
+  // frameEl.src = 'data:text/html;charset=utf-8,' + '';
   iframeWin.update({
     bodyHTML: ''
   });
@@ -110,7 +123,7 @@ function update() {
   
   destEl.value = html;
   
-  iframeWin = visFrameEl.contentWindow || visFrameEl;
+  iframeWin = frameEl.contentWindow || frameEl;
 
   if (iframeWin.update) {
     iframeWin.update({
@@ -131,9 +144,7 @@ function displayMessages(msg) {
 }
 
 function displayTree(doc) {
-  treeEl.innerHTML = '<pre class="monospace" style="font-size: 8px;">' + 
-    JSON.stringify(doc.dump(), undefined, 1) + 
-    '</pre>';
+  treeEl.innerHTML = JSON.stringify(doc.dump(), undefined, 1);
 }
 
 function enc(str) {

@@ -10,7 +10,7 @@ function Tokenizer(prs) {
 }
 
 // exports
-structure.Tokenizer = Tokenizer;
+transclusion.Tokenizer = Tokenizer;
 
 // states
 Tokenizer.STATE_EOF                     = 'STATE_EOF';
@@ -60,8 +60,8 @@ var exprStates = [
       Tokenizer.STATE_EXPR_AFTER_OPERATOR
     ],
     state = {},
-    Token = structure.Token,
-    CharTester = structure.CharTester;
+    Token = transclusion.Token,
+    CharTester = transclusion.CharTester;
 
 //////////////////////////////////////////////////////////////////////////////
 // Tokenizer methods:
@@ -79,7 +79,7 @@ Tokenizer.prototype = {
   },
 
   tokenize: function (input) {
-    var stream = new structure.CharStream(input),
+    var stream = new transclusion.CharStream(input),
         innings = 0;
 
     while (true) {
@@ -94,7 +94,7 @@ Tokenizer.prototype = {
       state[this.state](this, stream);
 
       innings++;
- 
+
       // TODO: remove this in BETA
       if (this.parser.document.debug && 3000 < innings) {
         throw new Error('Tokenizer running wild?');
@@ -141,10 +141,10 @@ Tokenizer.prototype = {
   },
 
   exitExpr: function () {
-    
+
     this.buffer = '';
     this.tokQueue = [];
-    
+
     this.queueTokens = false;
 
     while (-1 < exprStates.indexOf(this.state)) {

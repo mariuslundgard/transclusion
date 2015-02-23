@@ -4,13 +4,13 @@
   } else if (typeof exports === 'object') {
     module.exports = factory();
   } else {
-    root.structure = factory();
+    root.transclusion = factory();
   }
 }(this, function () {
 
-var structure = exports.structure = {};
+var transclusion = exports.transclusion = {};
 
-structure.elementRules = {
+transclusion.elementRules = {
   globalAttrs: {
     'accesskey': [],
     'class': [],
@@ -1113,7 +1113,7 @@ function ElementDirective(name, rules, callbacks) {
 }
 
 // exports
-structure.ElementDirective = ElementDirective;
+transclusion.ElementDirective = ElementDirective;
 
 ElementDirective.prototype = {
   mayContain: function (name) {
@@ -1136,7 +1136,7 @@ ElementDirective.prototype = {
 
   isVoidElement: function () {
     this.loadRules();
-    return -1 < structure.elementRules.voidElements.indexOf(this.name);
+    return -1 < transclusion.elementRules.voidElements.indexOf(this.name);
   },
 
   loadRules: function () {
@@ -1154,30 +1154,30 @@ ElementDirective.prototype = {
 
       switch (this.name) {
         case 'html':
-          allowedAttrs = structure.elementRules.html.allowedAttrs;
-          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
-          allowedChildElements = structure.elementRules.html.allowedChildElements;
+          allowedAttrs = transclusion.elementRules.html.allowedAttrs;
+          allowedMetaAttrs = transclusion.elementRules.html.allowedMetaAttrs;
+          allowedChildElements = transclusion.elementRules.html.allowedChildElements;
           break;
 
         case 'head':
-          allowedAttrs = structure.elementRules.head.allowedAttrs;
-          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
-          allowedChildElements = structure.elementRules.head.allowedChildElements;
+          allowedAttrs = transclusion.elementRules.head.allowedAttrs;
+          allowedMetaAttrs = transclusion.elementRules.html.allowedMetaAttrs;
+          allowedChildElements = transclusion.elementRules.head.allowedChildElements;
           break;
 
         case 'body':
-          allowedAttrs = structure.elementRules.body.allowedAttrs;
-          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
-          allowedChildElements = structure.elementRules.body.allowedChildElements;
+          allowedAttrs = transclusion.elementRules.body.allowedAttrs;
+          allowedMetaAttrs = transclusion.elementRules.html.allowedMetaAttrs;
+          allowedChildElements = transclusion.elementRules.body.allowedChildElements;
           break;
 
         default:
-          if (structure.elementRules.head.allowedChildElements[this.name]) {
-            elRules = structure.elementRules.head.allowedChildElements[this.name] || {};
-          } else if (structure.elementRules.body.allowedChildElements[this.name]) {
-            elRules = structure.elementRules.body.allowedChildElements[this.name] || {};
+          if (transclusion.elementRules.head.allowedChildElements[this.name]) {
+            elRules = transclusion.elementRules.head.allowedChildElements[this.name] || {};
+          } else if (transclusion.elementRules.body.allowedChildElements[this.name]) {
+            elRules = transclusion.elementRules.body.allowedChildElements[this.name] || {};
           }
-          
+
           allowedAttrs = (elRules && elRules.allowedAttrs) ? elRules.allowedAttrs : {};
           allowedChildElements = (elRules && elRules.allowedChildElements) ? elRules.allowedChildElements : {};
 
@@ -1187,7 +1187,7 @@ ElementDirective.prototype = {
           break;
       }
 
-      this.extendAllowedAttrs(structure.elementRules.globalAttrs);
+      this.extendAllowedAttrs(transclusion.elementRules.globalAttrs);
       this.extendAllowedAttrs(allowedAttrs);
       this.extendAllowedMetaAttrs(allowedMetaAttrs);
       this.extendAllowedChildElements(allowedChildElements);
@@ -1230,8 +1230,8 @@ function expandChildElements(allowedChildElements) {
 
   for (name in allowedChildElements) {
     if ('#' === name.charAt(0)) {
-      for (_name in structure.elementRules.contentCategories[name]) {
-        ret[_name] = structure.elementRules.contentCategories[name][_name];
+      for (_name in transclusion.elementRules.contentCategories[name]) {
+        ret[_name] = transclusion.elementRules.contentCategories[name][_name];
       }
     }
   }
@@ -1245,7 +1245,7 @@ function ElementDirectiveSet(name) {
   this.set = [];
 }
 
-structure.ElementDirectiveSet = ElementDirectiveSet;
+transclusion.ElementDirectiveSet = ElementDirectiveSet;
 
 ElementDirectiveSet.prototype = {
   mayContain: function (name) {
@@ -1306,7 +1306,7 @@ ElementDirectiveSet.prototype = {
 
   loadDirectives: function () {
     if (! this.isLoaded) {
-      this.add(new structure.ElementDirective(this.name));
+      this.add(new transclusion.ElementDirective(this.name));
       this.isLoaded = true;
     }
   },
@@ -1349,8 +1349,8 @@ function Node(type, name) {
 }
 
 // exports
-structure.Node = Node;
-structure.nodes = {};
+transclusion.Node = Node;
+transclusion.nodes = {};
 
 // constants
 Node.NODE_ELEMENT = 1;
@@ -1475,17 +1475,17 @@ Node.prototype = {
 };
 
 function Element(name) {
-  structure.Node.call(this, structure.Node.NODE_ELEMENT, name);
+  transclusion.Node.call(this, transclusion.Node.NODE_ELEMENT, name);
   this.directiveSet = null;
   this.id = null;
   this.previousSibling = null;
   this.nextSibling = null;
 }
 
-Element.prototype = Object.create(structure.Node.prototype);
+Element.prototype = Object.create(transclusion.Node.prototype);
 Element.prototype.constructor = Element;
 
-structure.nodes.Element = Element;
+transclusion.nodes.Element = Element;
 
 Element.prototype.appendChild = function (node) {
   if (this.lastChild) {
@@ -1493,7 +1493,7 @@ Element.prototype.appendChild = function (node) {
     this.nextSibling = node;
   }
   node.nextSibling = null;
-  structure.Node.prototype.appendChild.call(this, node);
+  transclusion.Node.prototype.appendChild.call(this, node);
   return node;
 };
 
@@ -1515,13 +1515,13 @@ Element.prototype.isVoidElement = function () {
 
 Element.prototype.getDirectiveSet = function () {
   if (null === this.directiveSet) {
-    this.directiveSet = new structure.ElementDirectiveSet(this.name);
+    this.directiveSet = new transclusion.ElementDirectiveSet(this.name);
   }
   return this.directiveSet;
 };
 
 Element.prototype.dump = function () {
-  var i, len, ret = structure.Node.prototype.dump.call(this);
+  var i, len, ret = transclusion.Node.prototype.dump.call(this);
 
   if (this.attrs.length) {
     ret.attrs = {};
@@ -1576,137 +1576,134 @@ Element.prototype.getChildrenByName = function(name) {
 };
 
 function Attr(name) {
-  structure.Node.call(this, structure.Node.NODE_ATTR, name);
+  transclusion.Node.call(this, transclusion.Node.NODE_ATTR, name);
 }
 
-Attr.prototype = Object.create(structure.Node.prototype);
+Attr.prototype = Object.create(transclusion.Node.prototype);
 Attr.prototype.constructor = Attr;
 
-// exports
-structure.nodes.Attr = Attr;
+transclusion.nodes.Attr = Attr;
 
 Attr.prototype.evaluate = function () {
   return this.document.getCompiler().compileNodes(this.childNodes);
 };
 
 function Text(data) {
-  structure.Node.call(this, structure.Node.NODE_TEXT, '#text');
+  transclusion.Node.call(this, transclusion.Node.NODE_TEXT, '#text');
   this.data = data || '';
   this.whiteSpace = true;
 }
 
-Text.prototype = Object.create(structure.Node.prototype);
+Text.prototype = Object.create(transclusion.Node.prototype);
 Text.prototype.constructor = Text;
 
 // exports
-structure.nodes.Text = Text;
+transclusion.nodes.Text = Text;
 
 Text.prototype.appendData = function (data) {
   this.data += data;
 };
 
 Text.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   ret.data = this.data;
   return ret;
 };
 
 function Comment(data) {
-  structure.Node.call(this, structure.Node.NODE_COMMENT, '#comment');
+  transclusion.Node.call(this, transclusion.Node.NODE_COMMENT, '#comment');
   this.data = data || '';
 }
 
-Comment.prototype = Object.create(structure.Node.prototype);
+Comment.prototype = Object.create(transclusion.Node.prototype);
 Comment.prototype.constructor = Comment;
 
-structure.nodes.Comment = Comment;
+transclusion.nodes.Comment = Comment;
 
 Comment.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   ret.data = this.data;
   return ret;
 };
 
 function Arr() {
-  structure.Node.call(this, structure.Node.NODE_ARRAY, '#array');
+  transclusion.Node.call(this, transclusion.Node.NODE_ARRAY, '#array');
 }
 
-Arr.prototype = Object.create(structure.Node.prototype);
+Arr.prototype = Object.create(transclusion.Node.prototype);
 Arr.prototype.constructor = Arr;
 
-// exports
-structure.nodes.Arr = Arr;
+transclusion.nodes.Arr = Arr;
 
 Arr.prototype.dump = function () {
-  // return this.childNodes;
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   return ret;
 };
 
 function Expr() {
-  structure.Node.call(this, structure.Node.NODE_EXPR, '#expr');
+  transclusion.Node.call(this, transclusion.Node.NODE_EXPR, '#expr');
 }
 
-Expr.prototype = Object.create(structure.Node.prototype);
+Expr.prototype = Object.create(transclusion.Node.prototype);
 Expr.prototype.constructor = Expr;
 
 // exports
-structure.nodes.Expr = Expr;
+transclusion.nodes.Expr = Expr;
 
 function Var(name) {
-  structure.Node.call(this, structure.Node.NODE_VAR, name);
+  transclusion.Node.call(this, transclusion.Node.NODE_VAR, name);
 }
 
-Var.prototype = Object.create(structure.Node.prototype);
+Var.prototype = Object.create(transclusion.Node.prototype);
 Var.prototype.constructor = Var;
 
 // exports
-structure.nodes.Var = Var;
+transclusion.nodes.Var = Var;
 
 function Operator(sign) {
-  structure.Node.call(this, structure.Node.NODE_OPERATOR, '#operator');
+  transclusion.Node.call(this, transclusion.Node.NODE_OPERATOR, '#operator');
   this.sign = sign;
 }
 
-Operator.prototype = Object.create(structure.Node.prototype);
+Operator.prototype = Object.create(transclusion.Node.prototype);
 Operator.prototype.constructor = Operator;
 
 // exports
-structure.nodes.Operator = Operator;
+transclusion.nodes.Operator = Operator;
 
 Operator.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   ret.sign = this.sign;
   return ret;
 };
 
 function Str(data) {
-  structure.Node.call(this, structure.Node.NODE_STRING, '#string');
+  transclusion.Node.call(this, transclusion.Node.NODE_STRING, '#string');
   this.data = data;
 }
 
-Str.prototype = Object.create(structure.Node.prototype);
+Str.prototype = Object.create(transclusion.Node.prototype);
 Str.prototype.constructor = Str;
 
 // exports
-structure.nodes.Str = Str;
+transclusion.nodes.Str = Str;
 
 Str.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   ret.data = this.data;
   return ret;
 };
 
 function Num(value) {
-  structure.Node.call(this, structure.Node.NODE_NUMBER, '#number');
+  transclusion.Node.call(this, transclusion.Node.NODE_NUMBER, '#number');
   this.value = value;
 }
 
-Num.prototype = Object.create(structure.Node.prototype);
+Num.prototype = Object.create(transclusion.Node.prototype);
 Num.prototype.constructor = Num;
 
 // exports
-structure.nodes.Num = Num;
+transclusion.nodes.Num = Num;
 
 function CharStream(input) {
   this.input = input ? input.replace(/(\r\n|\n|\r)/gm, '\n') : '';
@@ -1717,7 +1714,7 @@ function CharStream(input) {
 }
 
 // exports
-structure.CharStream = CharStream;
+transclusion.CharStream = CharStream;
 
 CharStream.prototype = {
   getPointer: function () {
@@ -1796,7 +1793,7 @@ CharStream.prototype = {
 
     while (i < len) {
       chr = this.next();
-      
+
       if ('\n' === chr) {
         this.line++;
         this.column = 0;
@@ -1809,7 +1806,7 @@ CharStream.prototype = {
   }
 };
 
-structure.CharTester = {
+transclusion.CharTester = {
   isWhiteSpace: function (chr) {
     return '\n' === chr || '\t' === chr || ' ' === chr;
   },
@@ -1828,7 +1825,7 @@ structure.CharTester = {
 };
 
 function Document(input) {
-  structure.Node.call(this, structure.Node.NODE_DOCUMENT, '#document');
+  transclusion.Node.call(this, transclusion.Node.NODE_DOCUMENT, '#document');
   this.debug = false;
   this.input = input || '';
   this.parser = null;
@@ -1837,14 +1834,14 @@ function Document(input) {
   this.reset();
 }
 
-Document.prototype = Object.create(structure.Node.prototype);
+Document.prototype = Object.create(transclusion.Node.prototype);
 Document.prototype.constructor = Document;
 
 // exports
-structure.Document = Document;
+transclusion.Document = Document;
 
 Document.prototype.addDirective = function(name, params) {
-  var directive = new structure.ElementDirective(name, params);
+  var directive = new transclusion.ElementDirective(name, params);
   this.directives.push(directive);
   return directive;
 };
@@ -1880,7 +1877,7 @@ Document.prototype.reset = function () {
 };
 
 Document.prototype.createElement = function (name) {
-  var node = new structure.nodes.Element(name);
+  var node = new transclusion.nodes.Element(name);
   node.setDocument(this);
   switch (name) {
     case 'html':
@@ -1906,69 +1903,69 @@ Document.prototype.createElement = function (name) {
 };
 
 Document.prototype.createText = function (data) {
-  var node = new structure.nodes.Text(data);
+  var node = new transclusion.nodes.Text(data);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createComment = function (data) {
-  var node = new structure.nodes.Comment(data);
+  var node = new transclusion.nodes.Comment(data);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createAttr = function (name) {
-  var node = new structure.nodes.Attr(name);
+  var node = new transclusion.nodes.Attr(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createArray = function (name) {
-  var node = new structure.nodes.Arr(name);
+  var node = new transclusion.nodes.Arr(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createString = function (data) {
-  var node = new structure.nodes.Str(data);
+  var node = new transclusion.nodes.Str(data);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createExpr = function () {
-  var node = new structure.nodes.Expr();
+  var node = new transclusion.nodes.Expr();
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createVar = function (name) {
-  var node = new structure.nodes.Var(name);
+  var node = new transclusion.nodes.Var(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createNumber = function (name) {
-  var node = new structure.nodes.Num(name);
+  var node = new transclusion.nodes.Num(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createOperator = function (sign) {
-  var node = new structure.nodes.Operator(sign);
+  var node = new transclusion.nodes.Operator(sign);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.getParser = function () {
   if (null === this.parser) {
-    this.parser = new structure.Parser(this);
+    this.parser = new transclusion.Parser(this);
   }
   return this.parser;
 };
 
 Document.prototype.getCompiler = function () {
   if (null === this.compiler) {
-    this.compiler = new structure.Compiler(this);
+    this.compiler = new transclusion.Compiler(this);
   }
   return this.compiler;
 };
@@ -1992,7 +1989,7 @@ Document.prototype.compile = function (input) {
   return this.output;
 };
 
-structure.Token = {
+transclusion.Token = {
   EOF: 'EOF',
   CHAR: 'CHAR',
   DOCTYPE: 'DOCTYPE',
@@ -2033,7 +2030,7 @@ function Tokenizer(prs) {
 }
 
 // exports
-structure.Tokenizer = Tokenizer;
+transclusion.Tokenizer = Tokenizer;
 
 // states
 Tokenizer.STATE_EOF                     = 'STATE_EOF';
@@ -2083,8 +2080,8 @@ var exprStates = [
       Tokenizer.STATE_EXPR_AFTER_OPERATOR
     ],
     state = {},
-    Token = structure.Token,
-    CharTester = structure.CharTester;
+    Token = transclusion.Token,
+    CharTester = transclusion.CharTester;
 
 //////////////////////////////////////////////////////////////////////////////
 // Tokenizer methods:
@@ -2102,7 +2099,7 @@ Tokenizer.prototype = {
   },
 
   tokenize: function (input) {
-    var stream = new structure.CharStream(input),
+    var stream = new transclusion.CharStream(input),
         innings = 0;
 
     while (true) {
@@ -2117,7 +2114,7 @@ Tokenizer.prototype = {
       state[this.state](this, stream);
 
       innings++;
- 
+
       // TODO: remove this in BETA
       if (this.parser.document.debug && 3000 < innings) {
         throw new Error('Tokenizer running wild?');
@@ -2164,10 +2161,10 @@ Tokenizer.prototype = {
   },
 
   exitExpr: function () {
-    
+
     this.buffer = '';
     this.tokQueue = [];
-    
+
     this.queueTokens = false;
 
     while (-1 < exprStates.indexOf(this.state)) {
@@ -3490,12 +3487,12 @@ function TreeConstructor(prs) {
 }
 
 // exports
-var Token = structure.Token,
-    CharTester = structure.CharTester,
+var Token = transclusion.Token,
+    CharTester = transclusion.CharTester,
     mode = {};
 
 // exports
-structure.TreeConstructor = TreeConstructor;
+transclusion.TreeConstructor = TreeConstructor;
 
 // constants
 TreeConstructor.MODE_INITIAL      = 'MODE_INITIAL';
@@ -3600,7 +3597,7 @@ TreeConstructor.prototype = {
 
   insertChar: function (data) {
     var node = this.parser.document.createText(data);
-    if (this.node.lastChild && structure.Node.NODE_TEXT === this.node.lastChild.type) {
+    if (this.node.lastChild && transclusion.Node.NODE_TEXT === this.node.lastChild.type) {
       this.node.lastChild.appendData(data);
     } else {
       this.node.appendChild(node);
@@ -3721,7 +3718,7 @@ mode[TreeConstructor.MODE_BEFORE_HTML] = function (scope, tok) {
         scope.pushMode(TreeConstructor.MODE_IN_START_TAG);
       } else {
         scope.parser.report(
-          'debug', 
+          'debug',
           'Inserting <html> before attempting to insert <' + tok.name + '> (MODE_BEFORE_HTML)'
         );
         scope.insertElement('html');
@@ -3741,7 +3738,7 @@ mode[TreeConstructor.MODE_BEFORE_HTML] = function (scope, tok) {
 
     default:
       scope.parser.report(
-        'debug', 
+        'debug',
         'Inserting <html> before proceeding to handle token: ' + tok.type + ' (MODE_BEFORE_HTML)'
       );
       scope.insertElement('html');
@@ -3859,7 +3856,7 @@ mode[TreeConstructor.MODE_IN_HEAD] = function (scope, tok) {
       scope.node.setInnerStartOffset(tok.offset);
       if (-1 < [ 'title', 'script', 'style' ].indexOf(scope.node.name)) {
         scope.pushMode(TreeConstructor.MODE_IN_TEXT);
-        scope.parser.tokenizer.setState(structure.Tokenizer.STATE_RAWTEXT);
+        scope.parser.tokenizer.setState(transclusion.Tokenizer.STATE_RAWTEXT);
       } else {
         // console.log(tok, scope.node);
         if (scope.node.isVoidElement()) {
@@ -4117,7 +4114,7 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
   switch (true) {
     case Token.START_TAG_CLOSE === tok.type:
       scope.popMode();
-      if (structure.Node.NODE_ATTR === scope.node.type) {
+      if (transclusion.Node.NODE_ATTR === scope.node.type) {
         scope.popNode();
       }
       scope.handleToken(tok);
@@ -4134,7 +4131,7 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
       break;
 
     case Token.ATTR_KEY === tok.type:
-      while (structure.Node.NODE_ATTR === scope.node.type) {
+      while (transclusion.Node.NODE_ATTR === scope.node.type) {
         scope.popNode();
       }
       if (scope.node.mayContainMetaAttribute(tok.name)) {
@@ -4352,7 +4349,7 @@ function Parser(doc) {
 }
 
 // exports
-structure.Parser = Parser;
+transclusion.Parser = Parser;
 
 Parser.prototype = {
   reset: function () {
@@ -4375,14 +4372,14 @@ Parser.prototype = {
 
   getTokenizer: function () {
     if (null === this.tokenizer) {
-      this.tokenizer = new structure.Tokenizer(this);
+      this.tokenizer = new transclusion.Tokenizer(this);
     }
     return this.tokenizer;
   },
 
   getTreeConstructor: function () {
     if (null === this.treeConstructor) {
-      this.treeConstructor = new structure.TreeConstructor(this);
+      this.treeConstructor = new transclusion.TreeConstructor(this);
     }
     return this.treeConstructor;
   },
@@ -4430,7 +4427,7 @@ function Compiler(doc) {
 }
 
 // exports
-structure.Compiler = Compiler;
+transclusion.Compiler = Compiler;
 
 Compiler.prototype = {
   compile: function () {
@@ -4448,7 +4445,7 @@ Compiler.prototype = {
   compileNode: function (node) {
     var ret = '';
     switch (node.type) {
-      case structure.Node.NODE_ELEMENT:
+      case transclusion.Node.NODE_ELEMENT:
         ret += '<';
         ret += node.name;
         ret += this.compileNodes(node.attrs);
@@ -4461,17 +4458,17 @@ Compiler.prototype = {
         }
         break;
 
-      case structure.Node.NODE_TEXT:
+      case transclusion.Node.NODE_TEXT:
         ret += node.data;
         break;
 
-      case structure.Node.NODE_COMMENT:
+      case transclusion.Node.NODE_COMMENT:
         ret += '<!--';
         ret += node.data;
         ret += '-->';
         break;
 
-      case structure.Node.NODE_ATTR:
+      case transclusion.Node.NODE_ATTR:
         ret += ' ';
         ret += node.name;
         ret += '="';
@@ -4479,31 +4476,31 @@ Compiler.prototype = {
         ret += '"';
         break;
 
-      case structure.Node.NODE_ARRAY:
+      case transclusion.Node.NODE_ARRAY:
         ret += 'Array(' + node.childNodes.length + ')';
         break;
 
-      case structure.Node.NODE_EXPR:
+      case transclusion.Node.NODE_EXPR:
         if (node.childNodes.length) {
           ret += this.compileExpr(node);
         }
         break;
 
-      case structure.Node.NODE_VAR:
+      case transclusion.Node.NODE_VAR:
         ret += 'this.document.context.' + node.name;
         break;
 
-      case structure.Node.NODE_OPERATOR:
+      case transclusion.Node.NODE_OPERATOR:
         ret += ' ';
         ret += node.sign;
         ret += ' ';
         break;
 
-      case structure.Node.NODE_NUMBER:
+      case transclusion.Node.NODE_NUMBER:
         ret += node.value;
         break;
 
-      case structure.Node.NODE_STRING:
+      case transclusion.Node.NODE_STRING:
         ret += '\'' + node.data.replace(/(\')/gm, '\\\'') + '\'';
         break;
 
@@ -4516,13 +4513,13 @@ Compiler.prototype = {
   compileExpr: function (node) {
     var ret = '';
 
-    if (structure.NODE_EXPR === node.parentNode.type) {
+    if (transclusion.NODE_EXPR === node.parentNode.type) {
       // ret += '(';
     }
 
     ret += this.compileNodes(node.childNodes);
 
-    if (structure.NODE_EXPR === node.parentNode.type) {
+    if (transclusion.NODE_EXPR === node.parentNode.type) {
       // ret += ')';
     }
 
@@ -4532,5 +4529,5 @@ Compiler.prototype = {
   }
 };
 
-  return structure;
+  return transclusion;
 }));

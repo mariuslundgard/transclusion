@@ -1,5 +1,5 @@
 function Document(input) {
-  structure.Node.call(this, structure.Node.NODE_DOCUMENT, '#document');
+  transclusion.Node.call(this, transclusion.Node.NODE_DOCUMENT, '#document');
   this.debug = false;
   this.input = input || '';
   this.parser = null;
@@ -8,14 +8,14 @@ function Document(input) {
   this.reset();
 }
 
-Document.prototype = Object.create(structure.Node.prototype);
+Document.prototype = Object.create(transclusion.Node.prototype);
 Document.prototype.constructor = Document;
 
 // exports
-structure.Document = Document;
+transclusion.Document = Document;
 
 Document.prototype.addDirective = function(name, params) {
-  var directive = new structure.ElementDirective(name, params);
+  var directive = new transclusion.ElementDirective(name, params);
   this.directives.push(directive);
   return directive;
 };
@@ -51,7 +51,7 @@ Document.prototype.reset = function () {
 };
 
 Document.prototype.createElement = function (name) {
-  var node = new structure.nodes.Element(name);
+  var node = new transclusion.nodes.Element(name);
   node.setDocument(this);
   switch (name) {
     case 'html':
@@ -77,69 +77,69 @@ Document.prototype.createElement = function (name) {
 };
 
 Document.prototype.createText = function (data) {
-  var node = new structure.nodes.Text(data);
+  var node = new transclusion.nodes.Text(data);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createComment = function (data) {
-  var node = new structure.nodes.Comment(data);
+  var node = new transclusion.nodes.Comment(data);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createAttr = function (name) {
-  var node = new structure.nodes.Attr(name);
+  var node = new transclusion.nodes.Attr(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createArray = function (name) {
-  var node = new structure.nodes.Arr(name);
+  var node = new transclusion.nodes.Arr(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createString = function (data) {
-  var node = new structure.nodes.Str(data);
+  var node = new transclusion.nodes.Str(data);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createExpr = function () {
-  var node = new structure.nodes.Expr();
+  var node = new transclusion.nodes.Expr();
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createVar = function (name) {
-  var node = new structure.nodes.Var(name);
+  var node = new transclusion.nodes.Var(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createNumber = function (name) {
-  var node = new structure.nodes.Num(name);
+  var node = new transclusion.nodes.Num(name);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.createOperator = function (sign) {
-  var node = new structure.nodes.Operator(sign);
+  var node = new transclusion.nodes.Operator(sign);
   node.setDocument(this);
   return node;
 };
 
 Document.prototype.getParser = function () {
   if (null === this.parser) {
-    this.parser = new structure.Parser(this);
+    this.parser = new transclusion.Parser(this);
   }
   return this.parser;
 };
 
 Document.prototype.getCompiler = function () {
   if (null === this.compiler) {
-    this.compiler = new structure.Compiler(this);
+    this.compiler = new transclusion.Compiler(this);
   }
   return this.compiler;
 };

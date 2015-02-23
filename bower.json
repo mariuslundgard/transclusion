@@ -1,11 +1,11 @@
 {
-  "name": "structure.js",
+  "name": "transclusion",
   "version": "0.0.1",
   "author": "Marius Lundgård <studio@mariuslundgard.com>",
   "main": [
-    "dist/structure.js",
-    "dist/structure.min.js",
-    "dist/structure.min.js.map"
+    "dist/transclusion.js",
+    "dist/transclusion.min.js",
+    "dist/transclusion.min.js.map"
   ],
   "license": "MIT",
   "ignore": [

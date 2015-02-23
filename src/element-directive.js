@@ -6,7 +6,7 @@ function ElementDirective(name, rules, callbacks) {
 }
 
 // exports
-structure.ElementDirective = ElementDirective;
+transclusion.ElementDirective = ElementDirective;
 
 ElementDirective.prototype = {
   mayContain: function (name) {
@@ -29,7 +29,7 @@ ElementDirective.prototype = {
 
   isVoidElement: function () {
     this.loadRules();
-    return -1 < structure.elementRules.voidElements.indexOf(this.name);
+    return -1 < transclusion.elementRules.voidElements.indexOf(this.name);
   },
 
   loadRules: function () {
@@ -47,30 +47,30 @@ ElementDirective.prototype = {
 
       switch (this.name) {
         case 'html':
-          allowedAttrs = structure.elementRules.html.allowedAttrs;
-          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
-          allowedChildElements = structure.elementRules.html.allowedChildElements;
+          allowedAttrs = transclusion.elementRules.html.allowedAttrs;
+          allowedMetaAttrs = transclusion.elementRules.html.allowedMetaAttrs;
+          allowedChildElements = transclusion.elementRules.html.allowedChildElements;
           break;
 
         case 'head':
-          allowedAttrs = structure.elementRules.head.allowedAttrs;
-          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
-          allowedChildElements = structure.elementRules.head.allowedChildElements;
+          allowedAttrs = transclusion.elementRules.head.allowedAttrs;
+          allowedMetaAttrs = transclusion.elementRules.html.allowedMetaAttrs;
+          allowedChildElements = transclusion.elementRules.head.allowedChildElements;
           break;
 
         case 'body':
-          allowedAttrs = structure.elementRules.body.allowedAttrs;
-          allowedMetaAttrs = structure.elementRules.html.allowedMetaAttrs;
-          allowedChildElements = structure.elementRules.body.allowedChildElements;
+          allowedAttrs = transclusion.elementRules.body.allowedAttrs;
+          allowedMetaAttrs = transclusion.elementRules.html.allowedMetaAttrs;
+          allowedChildElements = transclusion.elementRules.body.allowedChildElements;
           break;
 
         default:
-          if (structure.elementRules.head.allowedChildElements[this.name]) {
-            elRules = structure.elementRules.head.allowedChildElements[this.name] || {};
-          } else if (structure.elementRules.body.allowedChildElements[this.name]) {
-            elRules = structure.elementRules.body.allowedChildElements[this.name] || {};
+          if (transclusion.elementRules.head.allowedChildElements[this.name]) {
+            elRules = transclusion.elementRules.head.allowedChildElements[this.name] || {};
+          } else if (transclusion.elementRules.body.allowedChildElements[this.name]) {
+            elRules = transclusion.elementRules.body.allowedChildElements[this.name] || {};
           }
-          
+
           allowedAttrs = (elRules && elRules.allowedAttrs) ? elRules.allowedAttrs : {};
           allowedChildElements = (elRules && elRules.allowedChildElements) ? elRules.allowedChildElements : {};
 
@@ -80,7 +80,7 @@ ElementDirective.prototype = {
           break;
       }
 
-      this.extendAllowedAttrs(structure.elementRules.globalAttrs);
+      this.extendAllowedAttrs(transclusion.elementRules.globalAttrs);
       this.extendAllowedAttrs(allowedAttrs);
       this.extendAllowedMetaAttrs(allowedMetaAttrs);
       this.extendAllowedChildElements(allowedChildElements);
@@ -123,8 +123,8 @@ function expandChildElements(allowedChildElements) {
 
   for (name in allowedChildElements) {
     if ('#' === name.charAt(0)) {
-      for (_name in structure.elementRules.contentCategories[name]) {
-        ret[_name] = structure.elementRules.contentCategories[name][_name];
+      for (_name in transclusion.elementRules.contentCategories[name]) {
+        ret[_name] = transclusion.elementRules.contentCategories[name][_name];
       }
     }
   }

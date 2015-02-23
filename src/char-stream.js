@@ -7,7 +7,7 @@ function CharStream(input) {
 }
 
 // exports
-structure.CharStream = CharStream;
+transclusion.CharStream = CharStream;
 
 CharStream.prototype = {
   getPointer: function () {
@@ -86,7 +86,7 @@ CharStream.prototype = {
 
     while (i < len) {
       chr = this.next();
-      
+
       if ('\n' === chr) {
         this.line++;
         this.column = 0;

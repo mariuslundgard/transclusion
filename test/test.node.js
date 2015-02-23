@@ -5,13 +5,13 @@ var expect = chai.expect;
 describe('Node', function() {
   describe('constructor', function() {
     it('should set node\'s type and name', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
-      expect(node.type).to.equal(structure.Node.NODE_ELEMENT);
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
+      expect(node.type).to.equal(transclusion.Node.NODE_ELEMENT);
       expect(node.name).to.equal('#test');
     });
- 
+
     // it('should set node\'s name if provided', function() {
-    //   var node = new structure.Node('Kate');
+    //   var node = new transclusion.Node('Kate');
     //   expect(node.name).to.equal('Kate');
     // });
   });
@@ -20,13 +20,13 @@ describe('Node', function() {
 
   describe('#setOuterStartOffset', function() {
     it('should set outer start offset int', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       node.setOuterStartOffset(0);
       expect(node.outerStartOffset).to.equal(0);
     });
- 
+
     it('should throw if outer start offset is undefined', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       expect(function() {
         node.setOuterStartOffset();
       }).to.throw(Error);
@@ -37,13 +37,13 @@ describe('Node', function() {
 
   describe('#setOuterEndOffset', function() {
     it('should set outer end offset int', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       node.setOuterEndOffset(0);
       expect(node.outerEndOffset).to.equal(0);
     });
- 
+
     it('should throw if outer end offset is undefined', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       expect(function() {
         node.setOuterEndOffset();
       }).to.throw(Error);
@@ -54,13 +54,13 @@ describe('Node', function() {
 
   describe('#setInnerStartOffset', function() {
     it('should set outer start offset int', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       node.setInnerStartOffset(0);
       expect(node.innerStartOffset).to.equal(0);
     });
- 
+
     it('should throw if outer start offset is undefined', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       expect(function() {
         node.setInnerStartOffset();
       }).to.throw(Error);
@@ -71,13 +71,13 @@ describe('Node', function() {
 
   describe('#setInnerStartOffset', function() {
     it('should set inner end offset int', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       node.setInnerStartOffset(0);
       expect(node.innerStartOffset).to.equal(0);
     });
- 
+
     it('should throw if inner end offset is undefined', function() {
-      var node = new structure.Node(structure.Node.NODE_ELEMENT, '#test');
+      var node = new transclusion.Node(transclusion.Node.NODE_ELEMENT, '#test');
       expect(function() {
         node.setInnerEndOffset();
       }).to.throw(Error);

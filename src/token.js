@@ -1,4 +1,4 @@
-structure.Token = {
+transclusion.Token = {
   EOF: 'EOF',
   CHAR: 'CHAR',
   DOCTYPE: 'DOCTYPE',

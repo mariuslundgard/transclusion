@@ -31,8 +31,8 @@ function Node(type, name) {
 }
 
 // exports
-structure.Node = Node;
-structure.nodes = {};
+transclusion.Node = Node;
+transclusion.nodes = {};
 
 // constants
 Node.NODE_ELEMENT = 1;

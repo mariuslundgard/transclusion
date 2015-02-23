@@ -1,15 +1,15 @@
 function Comment(data) {
-  structure.Node.call(this, structure.Node.NODE_COMMENT, '#comment');
+  transclusion.Node.call(this, transclusion.Node.NODE_COMMENT, '#comment');
   this.data = data || '';
 }
 
-Comment.prototype = Object.create(structure.Node.prototype);
+Comment.prototype = Object.create(transclusion.Node.prototype);
 Comment.prototype.constructor = Comment;
 
-structure.nodes.Comment = Comment;
+transclusion.nodes.Comment = Comment;
 
 Comment.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   ret.data = this.data;
   return ret;
 };

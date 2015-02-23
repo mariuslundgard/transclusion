@@ -7,12 +7,12 @@ function TreeConstructor(prs) {
 }
 
 // exports
-var Token = structure.Token,
-    CharTester = structure.CharTester,
+var Token = transclusion.Token,
+    CharTester = transclusion.CharTester,
     mode = {};
 
 // exports
-structure.TreeConstructor = TreeConstructor;
+transclusion.TreeConstructor = TreeConstructor;
 
 // constants
 TreeConstructor.MODE_INITIAL      = 'MODE_INITIAL';
@@ -117,7 +117,7 @@ TreeConstructor.prototype = {
 
   insertChar: function (data) {
     var node = this.parser.document.createText(data);
-    if (this.node.lastChild && structure.Node.NODE_TEXT === this.node.lastChild.type) {
+    if (this.node.lastChild && transclusion.Node.NODE_TEXT === this.node.lastChild.type) {
       this.node.lastChild.appendData(data);
     } else {
       this.node.appendChild(node);
@@ -238,7 +238,7 @@ mode[TreeConstructor.MODE_BEFORE_HTML] = function (scope, tok) {
         scope.pushMode(TreeConstructor.MODE_IN_START_TAG);
       } else {
         scope.parser.report(
-          'debug', 
+          'debug',
           'Inserting <html> before attempting to insert <' + tok.name + '> (MODE_BEFORE_HTML)'
         );
         scope.insertElement('html');
@@ -258,7 +258,7 @@ mode[TreeConstructor.MODE_BEFORE_HTML] = function (scope, tok) {
 
     default:
       scope.parser.report(
-        'debug', 
+        'debug',
         'Inserting <html> before proceeding to handle token: ' + tok.type + ' (MODE_BEFORE_HTML)'
       );
       scope.insertElement('html');
@@ -376,7 +376,7 @@ mode[TreeConstructor.MODE_IN_HEAD] = function (scope, tok) {
       scope.node.setInnerStartOffset(tok.offset);
       if (-1 < [ 'title', 'script', 'style' ].indexOf(scope.node.name)) {
         scope.pushMode(TreeConstructor.MODE_IN_TEXT);
-        scope.parser.tokenizer.setState(structure.Tokenizer.STATE_RAWTEXT);
+        scope.parser.tokenizer.setState(transclusion.Tokenizer.STATE_RAWTEXT);
       } else {
         // console.log(tok, scope.node);
         if (scope.node.isVoidElement()) {
@@ -634,7 +634,7 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
   switch (true) {
     case Token.START_TAG_CLOSE === tok.type:
       scope.popMode();
-      if (structure.Node.NODE_ATTR === scope.node.type) {
+      if (transclusion.Node.NODE_ATTR === scope.node.type) {
         scope.popNode();
       }
       scope.handleToken(tok);
@@ -651,7 +651,7 @@ mode[TreeConstructor.MODE_IN_START_TAG] = function (scope, tok) {
       break;
 
     case Token.ATTR_KEY === tok.type:
-      while (structure.Node.NODE_ATTR === scope.node.type) {
+      while (transclusion.Node.NODE_ATTR === scope.node.type) {
         scope.popNode();
       }
       if (scope.node.mayContainMetaAttribute(tok.name)) {

@@ -5,7 +5,7 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         files: {
-          'dist/structure.js': [
+          'dist/transclusion.js': [
             'src/fragments/header.frag',
             'src/namespace.js',
             'src/element-rules.js',
@@ -69,20 +69,20 @@ module.exports = function(grunt) {
 
     uglify: {
       build: {
-        src: 'dist/structure.js',
-        dest: 'dist/structure.min.js'
+        src: 'dist/transclusion.js',
+        dest: 'dist/transclusion.min.js'
       },
       options: {
         preserveComments: false,
-        sourceMap: 'dist/structure.min.map',
-        sourceMappingURL: 'structure.min.map',
+        sourceMap: 'dist/transclusion.min.map',
+        sourceMappingURL: 'transclusion.min.map',
         report: 'min',
         beautify: {
           ascii_only: true
         },
-        banner: '/*! Structure.js v<%= pkg.version %> | ' +
+        banner: '/*! Transclusion.js v<%= pkg.version %> | ' +
             '(c) <%= grunt.template.today("yyyy") %> Marius Lundgård | ' +
-            'http://mariuslundgard.com/projects/structure/license */',
+            'http://mariuslundgard.com/projects/transclusion/license */',
         compress: {
           hoist_funs: false,
           loops: false,

@@ -1,7 +1,7 @@
-structure.js
+transclusion.js
 ============
 
-This is the alpha version of Structure.js (available for development and demo use).
+This is the alpha version of Transclusion.js (available for development and demo use).
 
 Try the demo or check out ```mariuslundgard/folio``` for advanced usage.
 
@@ -14,9 +14,9 @@ Try the demo or check out ```mariuslundgard/folio``` for advanced usage.
 
 ## Introduction
 
-Structure is a concept for a HTML5 preprocessor (currently implemented in alpha-stage for both PHP and Javascript). It’s an alternative to – and more importantly an extension of – plain vanilla HTML5.
+Transclusion is a concept for a HTML5 preprocessor (currently implemented in alpha-stage for both PHP and Javascript). It’s an alternative to – and more importantly an extension of – plain vanilla HTML5.
 
-For instance, Structure generates valid HTML5 out of minimal markup:
+For instance, Transclusion generates valid HTML5 out of minimal markup:
 
 ```
 <title>Welcome to my page</title>
@@ -37,7 +37,7 @@ Which yields:
 </html>
 ```
 
-More interestingly, Structure enables HTML5 to do things such as printing variables and looping:
+More interestingly, Transclusion enables HTML5 to do things such as printing variables and looping:
 
 ```
 <div each=(keyword in document.keywords)>
@@ -45,12 +45,12 @@ More interestingly, Structure enables HTML5 to do things such as printing variab
 </div>
 ```
 
-… as well as marking up data structures:
+… as well as marking up data transclusions:
 
 ```
 <html
   keywords=[
-    'structure',
+    'transclusion',
     'example',
     'html5',
     'superset'
@@ -71,7 +71,7 @@ The example above will yield:
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="keywords" value="structure, example, html5, superset">
+  <meta name="keywords" value="transclusion, example, html5, superset">
   <link rel="stylesheet" href="normalize.css">
   <link rel="stylesheet" href="core.css">
   <title></title>
@@ -82,10 +82,10 @@ The example above will yield:
 
 ## Directives
 
-Similar to AngularJS’ concept of directives, Structure can be extended to manage custom elements:
+Similar to AngularJS’ concept of directives, Transclusion can be extended to manage custom elements:
 
 ```js
-var doc = new structure.Document(),
+var doc = new transclusion.Document(),
     api = require('api'); // `api`: some client or server side api for
                           // retrieving stored documents
 

@@ -4,6 +4,6 @@
   } else if (typeof exports === 'object') {
     module.exports = factory();
   } else {
-    root.structure = factory();
+    root.transclusion = factory();
   }
 }(this, function () {

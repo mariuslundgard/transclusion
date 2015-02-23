@@ -1,4 +1,4 @@
-structure.CharTester = {
+transclusion.CharTester = {
   isWhiteSpace: function (chr) {
     return '\n' === chr || '\t' === chr || ' ' === chr;
   },

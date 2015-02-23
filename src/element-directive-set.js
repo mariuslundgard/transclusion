@@ -4,7 +4,7 @@ function ElementDirectiveSet(name) {
   this.set = [];
 }
 
-structure.ElementDirectiveSet = ElementDirectiveSet;
+transclusion.ElementDirectiveSet = ElementDirectiveSet;
 
 ElementDirectiveSet.prototype = {
   mayContain: function (name) {
@@ -65,7 +65,7 @@ ElementDirectiveSet.prototype = {
 
   loadDirectives: function () {
     if (! this.isLoaded) {
-      this.add(new structure.ElementDirective(this.name));
+      this.add(new transclusion.ElementDirective(this.name));
       this.isLoaded = true;
     }
   },

@@ -1,4 +1,4 @@
-structure.elementRules = {
+transclusion.elementRules = {
   globalAttrs: {
     'accesskey': [],
     'class': [],

@@ -1,15 +1,15 @@
 function Element(name) {
-  structure.Node.call(this, structure.Node.NODE_ELEMENT, name);
+  transclusion.Node.call(this, transclusion.Node.NODE_ELEMENT, name);
   this.directiveSet = null;
   this.id = null;
   this.previousSibling = null;
   this.nextSibling = null;
 }
 
-Element.prototype = Object.create(structure.Node.prototype);
+Element.prototype = Object.create(transclusion.Node.prototype);
 Element.prototype.constructor = Element;
 
-structure.nodes.Element = Element;
+transclusion.nodes.Element = Element;
 
 Element.prototype.appendChild = function (node) {
   if (this.lastChild) {
@@ -17,7 +17,7 @@ Element.prototype.appendChild = function (node) {
     this.nextSibling = node;
   }
   node.nextSibling = null;
-  structure.Node.prototype.appendChild.call(this, node);
+  transclusion.Node.prototype.appendChild.call(this, node);
   return node;
 };
 
@@ -39,13 +39,13 @@ Element.prototype.isVoidElement = function () {
 
 Element.prototype.getDirectiveSet = function () {
   if (null === this.directiveSet) {
-    this.directiveSet = new structure.ElementDirectiveSet(this.name);
+    this.directiveSet = new transclusion.ElementDirectiveSet(this.name);
   }
   return this.directiveSet;
 };
 
 Element.prototype.dump = function () {
-  var i, len, ret = structure.Node.prototype.dump.call(this);
+  var i, len, ret = transclusion.Node.prototype.dump.call(this);
 
   if (this.attrs.length) {
     ret.attrs = {};

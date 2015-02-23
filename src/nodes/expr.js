@@ -1,9 +1,9 @@
 function Expr() {
-  structure.Node.call(this, structure.Node.NODE_EXPR, '#expr');
+  transclusion.Node.call(this, transclusion.Node.NODE_EXPR, '#expr');
 }
 
-Expr.prototype = Object.create(structure.Node.prototype);
+Expr.prototype = Object.create(transclusion.Node.prototype);
 Expr.prototype.constructor = Expr;
 
 // exports
-structure.nodes.Expr = Expr;
+transclusion.nodes.Expr = Expr;

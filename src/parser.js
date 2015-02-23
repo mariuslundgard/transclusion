@@ -9,7 +9,7 @@ function Parser(doc) {
 }
 
 // exports
-structure.Parser = Parser;
+transclusion.Parser = Parser;
 
 Parser.prototype = {
   reset: function () {
@@ -32,14 +32,14 @@ Parser.prototype = {
 
   getTokenizer: function () {
     if (null === this.tokenizer) {
-      this.tokenizer = new structure.Tokenizer(this);
+      this.tokenizer = new transclusion.Tokenizer(this);
     }
     return this.tokenizer;
   },
 
   getTreeConstructor: function () {
     if (null === this.treeConstructor) {
-      this.treeConstructor = new structure.TreeConstructor(this);
+      this.treeConstructor = new transclusion.TreeConstructor(this);
     }
     return this.treeConstructor;
   },

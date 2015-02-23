@@ -1,21 +1,21 @@
 function Text(data) {
-  structure.Node.call(this, structure.Node.NODE_TEXT, '#text');
+  transclusion.Node.call(this, transclusion.Node.NODE_TEXT, '#text');
   this.data = data || '';
   this.whiteSpace = true;
 }
 
-Text.prototype = Object.create(structure.Node.prototype);
+Text.prototype = Object.create(transclusion.Node.prototype);
 Text.prototype.constructor = Text;
 
 // exports
-structure.nodes.Text = Text;
+transclusion.nodes.Text = Text;
 
 Text.prototype.appendData = function (data) {
   this.data += data;
 };
 
 Text.prototype.dump = function () {
-  var ret = structure.Node.prototype.dump.call(this);
+  var ret = transclusion.Node.prototype.dump.call(this);
   ret.data = this.data;
   return ret;
 };

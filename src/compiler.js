@@ -6,7 +6,7 @@ function Compiler(doc) {
 }
 
 // exports
-structure.Compiler = Compiler;
+transclusion.Compiler = Compiler;
 
 Compiler.prototype = {
   compile: function () {
@@ -24,7 +24,7 @@ Compiler.prototype = {
   compileNode: function (node) {
     var ret = '';
     switch (node.type) {
-      case structure.Node.NODE_ELEMENT:
+      case transclusion.Node.NODE_ELEMENT:
         ret += '<';
         ret += node.name;
         ret += this.compileNodes(node.attrs);
@@ -37,17 +37,17 @@ Compiler.prototype = {
         }
         break;
 
-      case structure.Node.NODE_TEXT:
+      case transclusion.Node.NODE_TEXT:
         ret += node.data;
         break;
 
-      case structure.Node.NODE_COMMENT:
+      case transclusion.Node.NODE_COMMENT:
         ret += '<!--';
         ret += node.data;
         ret += '-->';
         break;
 
-      case structure.Node.NODE_ATTR:
+      case transclusion.Node.NODE_ATTR:
         ret += ' ';
         ret += node.name;
         ret += '="';
@@ -55,31 +55,31 @@ Compiler.prototype = {
         ret += '"';
         break;
 
-      case structure.Node.NODE_ARRAY:
+      case transclusion.Node.NODE_ARRAY:
         ret += 'Array(' + node.childNodes.length + ')';
         break;
 
-      case structure.Node.NODE_EXPR:
+      case transclusion.Node.NODE_EXPR:
         if (node.childNodes.length) {
           ret += this.compileExpr(node);
         }
         break;
 
-      case structure.Node.NODE_VAR:
+      case transclusion.Node.NODE_VAR:
         ret += 'this.document.context.' + node.name;
         break;
 
-      case structure.Node.NODE_OPERATOR:
+      case transclusion.Node.NODE_OPERATOR:
         ret += ' ';
         ret += node.sign;
         ret += ' ';
         break;
 
-      case structure.Node.NODE_NUMBER:
+      case transclusion.Node.NODE_NUMBER:
         ret += node.value;
         break;
 
-      case structure.Node.NODE_STRING:
+      case transclusion.Node.NODE_STRING:
         ret += '\'' + node.data.replace(/(\')/gm, '\\\'') + '\'';
         break;
 
@@ -92,13 +92,13 @@ Compiler.prototype = {
   compileExpr: function (node) {
     var ret = '';
 
-    if (structure.NODE_EXPR === node.parentNode.type) {
+    if (transclusion.NODE_EXPR === node.parentNode.type) {
       // ret += '(';
     }
 
     ret += this.compileNodes(node.childNodes);
 
-    if (structure.NODE_EXPR === node.parentNode.type) {
+    if (transclusion.NODE_EXPR === node.parentNode.type) {
       // ret += ')';
     }
 

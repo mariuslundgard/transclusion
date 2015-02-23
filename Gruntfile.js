@@ -80,7 +80,7 @@ module.exports = function(grunt) {
         beautify: {
           ascii_only: true
         },
-        banner: '/*! Transclusion.js v<%= pkg.version %> | ' +
+        banner: '/*! transclusion v<%= pkg.version %> | ' +
             '(c) <%= grunt.template.today("yyyy") %> Marius Lundgård | ' +
             'http://mariuslundgard.com/projects/transclusion/license */',
         compress: {

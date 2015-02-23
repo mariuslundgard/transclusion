@@ -1,4 +1,4 @@
-transclusion.js
+transclusion
 ============
 
 This is the alpha version of Transclusion.js (available for development and demo use).

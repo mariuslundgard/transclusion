@@ -1,5 +1,5 @@
 {
-  "name": "transclusion.js",
+  "name": "transclusion",
   "version": "0.0.1",
   "description": "An HTML5 superset and preprocessor for JavaScript",
   "keywords": [
@@ -9,7 +9,7 @@
     "library"
   ],
   "author": "Marius Lundgård <studio@mariuslundgard.com>",
-  "repository": "mariuslundgard/transclusion.js",
+  "repository": "mariuslundgard/transclusion",
   "devDependencies": {
     "mocha": "1",
     "should": "3",

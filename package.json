@@ -23,7 +23,7 @@
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-jscs-checker": "^0.6.2"
   },
-  "main": "dist",
+  "main": "dist/transclusion.js",
   "scripts": {
     "build": "npm install && grunt",
     "start": "grunt watch",

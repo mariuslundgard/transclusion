@@ -1,4 +1,4 @@
-Structure.js
+structure.js
 ============
 
 This is the alpha version of Structure.js (available for development and demo use).
@@ -86,7 +86,7 @@ Similar to AngularJS’ concept of directives, Structure can be extended to mana
 
 ```js
 var doc = new structure.Document(),
-    api = require('api'); // `api`: some client or server side api for 
+    api = require('api'); // `api`: some client or server side api for
                           // retrieving stored documents
 
 // add a custom directive called `transclude`

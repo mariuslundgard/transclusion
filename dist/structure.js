@@ -1,4 +1,13 @@
-(function(exports){
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.structure = factory();
+  }
+}(this, function () {
+
 var structure = exports.structure = {};
 
 structure.elementRules = {
@@ -4522,4 +4531,6 @@ Compiler.prototype = {
     return eval(ret);
   }
 };
-})(this);
+
+  return structure;
+}));

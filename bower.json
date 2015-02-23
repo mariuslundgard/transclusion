@@ -1,6 +1,6 @@
 {
   "name": "structure.js",
-  "version": "0.1.0-alpha",
+  "version": "0.0.1",
   "author": "Marius Lundgård <studio@mariuslundgard.com>",
   "main": [
     "dist/structure.js",

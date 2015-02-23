@@ -106,12 +106,12 @@ function reset () {
 
 function update() {
   var input = srcEl.value;
-  
+
   if (0 == input.length) {
     reset();
     return;
   }
-  
+
   try {
     var html = doc.compile(input);
   } catch (err) {
@@ -120,9 +120,9 @@ function update() {
     displayMessages([{ type: 'error', message: err.message + ' (see console for backtrace)'}]);
     return;
   }
-  
+
   destEl.value = html;
-  
+
   iframeWin = frameEl.contentWindow || frameEl;
 
   if (iframeWin.update) {

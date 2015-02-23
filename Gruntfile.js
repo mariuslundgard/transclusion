@@ -4,12 +4,9 @@ module.exports = function(grunt) {
 
     concat: {
       dist: {
-        options: {
-          banner: '(function(exports){\n',
-          footer: '})(this);'
-        },
         files: {
           'dist/structure.js': [
+            'src/fragments/header.frag',
             'src/namespace.js',
             'src/element-rules.js',
             'src/element-directive.js',
@@ -32,7 +29,8 @@ module.exports = function(grunt) {
             'src/tokenizer.js',
             'src/tree-constructor.js',
             'src/parser.js',
-            'src/compiler.js'
+            'src/compiler.js',
+            'src/fragments/footer.frag'
           ]
         }
       }
